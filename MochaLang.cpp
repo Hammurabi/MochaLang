@@ -25,6 +25,11 @@ struct token {
 	std::string value;
 	
 	filevector  vector;
+
+	void print()
+	{
+		std::cout << "TOKEN: " << name << " " << value << " " << vector.line << " " << vector.offset << " " << vector.numspaces << std::endl;
+	}
 };
 
 
@@ -295,6 +300,8 @@ namespace MochaOpcodeProvider
 		'-',
 	};
 
+	std::string keywords[] = {"for", "while", "class", "struct", "goto", "mark", };
+
 	bool hasNext(std::string string, int index)
 	{
 		return string.size() > (index + 1);
@@ -305,7 +312,7 @@ namespace MochaOpcodeProvider
 		return string.at(index + 1);
 	}
 
-	bool isSpecial(std::string str, std::vector<token>& tokens)
+	bool isSpecial(std::string str, std::vector<token>& tokens, int line, int offset, int spaces)
 	{
 		if (str == "->")
 		{
@@ -331,25 +338,102 @@ namespace MochaOpcodeProvider
 		else if (str == "//")
 		{
 		}
+		else if (str == "==")
+		{
+		}
+		else if (str == "+=")
+		{
+		}
+		else if (str == "-=")
+		{
+		}
+		else if (str == "*=")
+		{
+		}
+		else if (str == "/=")
+		{
+		}
+		else if (str == "%=")
+		{
+		}
+		else if (str == "!=")
+		{
+		}
+		else if (str == "&=")
+		{
+		}
+		else if (str == "&&")
+		{
+		}
+		else if (str == "||")
+		{
+		}
+		else if (str == "^=")
+		{
+		}
+		else if (str == "|=")
+		{
+		}
 
 		return false;
 	}
 
 	bool isKeyword(std::string str, std::vector<token>& tokens)
 	{
+		for (int i = 0; i < 6; i++)
+		{
+			if (str == keywords[i])
+			{
+				
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	std::string typeof(std::string str)
 	{
-		for (int i = 0; i < str.length(); i++) if (isalpha(str.at(i))) return "identifier";
+		for (int i = 0; i < str.length(); i++) if (isalpha(str.at(i))) return "IDENTIFIER";
 
-		return "integer";
+		return "NUMBER";
+	}
+
+	std::string chartypeof(char c)
+	{
+		if (c == '(') return "OPEN_PARENTHESIS";
+		else if (c == ')') return "CLOSED_PARENTHESIS";
+		else if (c == '[') return "OPEN_BRACKET";
+		else if (c == ']') return "CLOSED_BRACKET";
+		else if (c == '*') return "MULTIPLICATION";
+		else if (c == '&') return "AND";
+		else if (c == '^') return "XOR";
+		else if (c == '$') return "DOLLARSIGN";
+		else if (c == '/') return "DIVISION";
+		else if (c == '.') return "DOT";
+		else if (c == ':') return "COLON";
+		else if (c == ';') return "SEMI_COLON";
+		else if (c == '+') return "ADDITION";
+		else if (c == '-') return "SUBTRACTION";
+		else if (c == '=') return "ASSIGN";
+		else if (c == '@') return "AT";
+		else if (c == '!') return "NOT";
+		else if (c == '~') return "ACCENT";
+		else if (c == '#') return "HASH";
+		else if (c == ',') return "COMMA";
+		else if (c == '?') return "QUESTION_MARK";
+		else if (c == '}') return "OPEN_CURLY";
+		else if (c == '{') return "CLOSE_CURLY";
+		else if (c == '|') return "OR";
+
+		return "";
 	}
 
 	std::vector<token> lex(std::string program, std::map<std::string, std::string> lexmap)
 	{
 		std::vector<token> tokens;
 		std::string        builder;
+		builder = "";
 
 #define N (hasNext(program, i) ? getNext(program, i) : '\0')
 #define L (hasNext(program, i) ? (getNext(program, i) + "") : "")
@@ -368,17 +452,21 @@ namespace MochaOpcodeProvider
 			{
 				line++;
 				offset = 1;
+				continue;
 			}
 			else if (C == ' ') spaces++;
+			else if (C == '\t') spaces += 4;
+			else spaces = 0;
 
 			std::string n = L;
 
 			std::string cn("" + C + n);
 
-			if (isSpecial(cn, tokens))
+			if (isSpecial(cn, tokens, line, offset, spaces))
 			{
 				i++;
 				offset += 2;
+				continue;
 			}
 			else
 			{
@@ -388,12 +476,14 @@ namespace MochaOpcodeProvider
 					isIdentifier = false;
 
 					token t;
-					t.name = "identifier";
-					t.value = std::string(builder);
+					t.name = typeof(builder);
+					t.value = std::string(builder.c_str());
+					std::cout << t.value << std::endl;
 					t.vector.line = line;
 					t.vector.numspaces = 0;
 					t.vector.offset = spaces;
 					tokens.push_back(t);
+					builder = "";
 				}
 
 
@@ -415,9 +505,10 @@ namespace MochaOpcodeProvider
 				//{
 
 				//}
-				else {
+				else if(C != ' ' && C != '\n' && C != '\t')
+				{
 					token t;
-					t.name = "";
+					t.name = chartypeof(C);
 					t.value = C;
 					t.vector.line = line;
 					t.vector.numspaces = 0;
@@ -465,7 +556,15 @@ namespace MochaOpcodeProvider
 
 int main()
 {
+	std::map<std::string, std::string> map;
 	std::cout << MochaOpcodeProvider::loadText(".\\lang\\sample.ma");
+
+	std::vector<token> tokens = MochaOpcodeProvider::lex(MochaOpcodeProvider::loadText(".\\lang\\sample.ma"), map);
+
+	for (int i = 0; i < tokens.size(); i++)
+	{
+		tokens[i].print();
+	}
 
 	while (true) {}
 
