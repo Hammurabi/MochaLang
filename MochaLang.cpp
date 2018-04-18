@@ -23,12 +23,13 @@ struct filevector
 struct token {
 	std::string name;
 	std::string value;
+	std::vector<token> tokens;
 	
 	filevector  vector;
 
 	void print()
 	{
-		std::cout << "TOKEN: " << name << " " << value << " " << vector.line << " " << vector.offset << " " << vector.numspaces << std::endl;
+		std::cout << "TOKEN: " << name << " " << value << " l:" << vector.line << " o:" << vector.offset << " s" << vector.numspaces << std::endl;
 	}
 };
 
@@ -312,14 +313,28 @@ namespace MochaOpcodeProvider
 		return string.at(index + 1);
 	}
 
-	bool isSpecial(const std::string str, const std::vector<token>& tokens, const int line, const int offset, const int spaces)
+	bool isSpecial(const std::string str, std::vector<token>& tokens, const int line, const int offset, const int spaces)
 	{
 		if (str == "->")
 		{
+			token t;
+			t.name = "ARROW";
+			t.value = str;
+			t.vector.line = line;
+			t.vector.numspaces = spaces;
+			t.vector.offset = offset;
+			tokens.push_back(t);
 			return true;
 		}
 		else if (str == "..")
 		{
+			token t;
+			t.name = "CONCATENATE";
+			t.value = str;
+			t.vector.line = line;
+			t.vector.numspaces = spaces;
+			t.vector.offset = offset;
+			tokens.push_back(t);
 			return true;
 		}
 		else if (str == "<<")
@@ -336,6 +351,13 @@ namespace MochaOpcodeProvider
 		}
 		else if (str == "--")
 		{
+			token t;
+			t.name = "UNARY_MINUS";
+			t.value = str;
+			t.vector.line = line;
+			t.vector.numspaces = spaces;
+			t.vector.offset = offset;
+			tokens.push_back(t);
 			return true;
 		}
 		else if (str == "**")
@@ -348,10 +370,24 @@ namespace MochaOpcodeProvider
 		}
 		else if (str == "==")
 		{
+			token t;
+			t.name = "ASSERT_EQUALS";
+			t.value = str;
+			t.vector.line = line;
+			t.vector.numspaces = spaces;
+			t.vector.offset = offset;
+			tokens.push_back(t);
 			return true;
 		}
 		else if (str == "+=")
 		{
+			token t;
+			t.name = "PLUS_EQUAL";
+			t.value = str;
+			t.vector.line = line;
+			t.vector.numspaces = spaces;
+			t.vector.offset = offset;
+			tokens.push_back(t);
 			return true;
 		}
 		else if (str == "-=")
@@ -380,6 +416,13 @@ namespace MochaOpcodeProvider
 		}
 		else if (str == "&&")
 		{
+			token t;
+			t.name = "ASSERT_AND";
+			t.value = str;
+			t.vector.line = line;
+			t.vector.numspaces = spaces;
+			t.vector.offset = offset;
+			tokens.push_back(t);
 			return true;
 		}
 		else if (str == "||")
@@ -449,118 +492,159 @@ namespace MochaOpcodeProvider
 		return "";
 	}
 
+	void loop(std::vector<token>& tokens, std::string& program, std::string& builder, int& i, int& offset, int& spaces, int& line, bool& countspaces, bool& isIdentifier)
+	{
+		using namespace std;
+
+		char C = program.at(i);
+
+		if (C == '\n')
+		{
+			line++;
+			offset = 1;
+			spaces = 1;
+			countspaces = true;
+			return;
+		}
+		else if (C == ' ') {
+			if (countspaces)
+				spaces++;
+			if (isIdentifier)
+			{
+				isIdentifier = false;
+
+				token t;
+
+				t.name = std::string(typeof(builder));
+				t.value = std::string(builder.c_str());
+
+				t.vector.line = line;
+				t.vector.numspaces = spaces;
+				t.vector.offset = offset;
+
+				tokens.push_back(t);
+
+				builder = "";
+			}
+			return;
+		}
+		else if (C == '\0')
+		{
+			isIdentifier = false;
+
+			token t;
+
+			t.name = std::string(typeof(builder));
+			t.value = std::string(builder.c_str());
+
+			t.vector.line = line;
+			t.vector.numspaces = spaces;
+			t.vector.offset = offset;
+
+			tokens.push_back(t);
+
+			builder = "";
+		}
+		else if (C == '\t') spaces += 4;
+
+		char L = (hasNext(program, i) ? program.at(i + 1) : '\0');
+
+		std::string cn = "";
+		cn = program.at(i);
+		cn = cn+L;
+
+		if (program.at(i) != '\s' && program.at(i) != '\t' && program.at(i) != '\n')
+			countspaces = false;
+
+		if (isSpecial(cn, tokens, line, offset, spaces))
+		{
+			offset += 2;
+			i++;
+			countspaces = false;
+			return;
+		}
+		else
+		{
+			if (isIdentifier && (C == '_' || C == '$' || isalnum(C)))
+			{
+				builder = builder + program.at(i);
+			}
+			else if (isIdentifier)
+			{
+				isIdentifier = false;
+
+				token t;
+
+				t.name = std::string(typeof(builder));
+				t.value = std::string(builder.c_str());
+
+				t.vector.line = line;
+				t.vector.numspaces = spaces;
+				t.vector.offset = offset;
+
+				tokens.push_back(t);
+
+				builder = "";
+			}
+			else if (!isIdentifier && (C == '_' || C == '$' || isalnum(C)))
+			{
+				builder = program.at(i);// +"");
+				isIdentifier = true;
+			}
+			//else if (!isNumber && ( (!isalpha(C) && isalnum(C)) || C == '_'))
+			//{
+			//	builder.append(C + "");
+			//	isNumber = true;
+			//}
+			//else if ((!isalpha(C) && isalnum(C)) && isNumber)
+			//{
+			//	builder.append(C + "");
+			//}
+			//else if (!(!isalpha(C) && isalnum(C)) && isNumber)
+			//{
+
+			//}
+			else if (C != ' ' && C != '\n' && C != '\t')
+			{
+				token t;
+				t.name = chartypeof(C);
+				t.value = C;
+				t.vector.line = line;
+				t.vector.numspaces = spaces;
+				t.vector.offset = offset;
+				tokens.push_back(t);
+				countspaces = false;
+			}
+			else {
+			}
+
+			offset++;
+		}
+	}
+
 	std::vector<token> lex(std::string program, std::map<std::string, std::string> lexmap)
 	{
 		std::vector<token> tokens;
 		std::string        builder = "";
 
-#define N (hasNext(program, i) ? getNext(program, i) : '\0')
+		program = program + " ";
+
+//#define N (hasNext(program, i) ? getNext(program, i) : '\0')
 //#define L (hasNext(program, i) ? (getNext(program, i) + "") : "")
 //#define C program.at(i)
 
 		int line = 0;
 		int offset = 0;
 		int spaces = 0;
+		bool countspaces = 1;
 
 		bool isIdentifier = false;
 
-		using namespace std;
-
 		for (int i = 0; i < program.size(); i++)
-		{
-			char C = program.at(i);
-
-			if (C == '\n')
-			{
-				line++;
-				offset = 1;
-				continue;
-			}
-			else if (C == ' ') {
-				spaces++;
-				if (isIdentifier)
-				{
-					isIdentifier = false;
-
-					token t;
-					t.name = std::string(typeof(builder));
-					t.value = std::string(builder.c_str());
-					t.vector.line = line;
-					t.vector.numspaces = 0;
-					t.vector.offset = spaces;
-					tokens.push_back(t);
-					builder = "";
-				}
-				continue;
-			}
-			else if (C == '\t') spaces += 4;
-			else spaces = 0;
-
-			char L = (hasNext(program, i) ? program.at(i + 1) : '\0');
-
-			std::string cn = "";
-			cn = program.at(i) + L;
-			
-			if (isSpecial(cn, tokens, line, offset, spaces))
-			{
-				offset += 2;
-				continue;
-			}
-			else
-			{
-				if (isIdentifier && (C == '_' || C == '$' || isalnum(C)))
-				{
-					builder = builder + program.at(i);
-				}
-				else if (isIdentifier)
-				{
-					isIdentifier = false;
-
-					token t;
-					t.name = std::string(typeof(builder));
-					t.value = std::string(builder.c_str());
-					t.vector.line = line;
-					t.vector.numspaces = 0;
-					t.vector.offset = spaces;
-					tokens.push_back(t);
-					builder = "";
-				}
-				else if (!isIdentifier && (C == '_' || C == '$' || isalnum(C)))
-				{
-					builder = program.at(i);// +"");
-					isIdentifier = true;
-				}
-				//else if (!isNumber && ( (!isalpha(C) && isalnum(C)) || C == '_'))
-				//{
-				//	builder.append(C + "");
-				//	isNumber = true;
-				//}
-				//else if ((!isalpha(C) && isalnum(C)) && isNumber)
-				//{
-				//	builder.append(C + "");
-				//}
-				//else if (!(!isalpha(C) && isalnum(C)) && isNumber)
-				//{
-
-				//}
-				else if(C != ' ' && C != '\n' && C != '\t')
-				{
-					token t;
-					t.name = chartypeof(C);
-					t.value = C;
-					t.vector.line = line;
-					t.vector.numspaces = 0;
-					t.vector.offset = spaces;
-					tokens.push_back(t);
-				}
-
-				offset++;
-			}
-		}
-
-#undef N
-#undef L
-#undef C
+			loop(tokens, program, builder, i, offset, spaces, line, countspaces, isIdentifier);
+//#undef N
+//#undef L
+//#undef C
 
 		return tokens;
 	}

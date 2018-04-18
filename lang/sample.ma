@@ -9,4 +9,8 @@
 //    	e:print()
 
 
-print 5 * 12 + 6
+   print 5 * 12 + 6
+
+   if a == b
+
+   ->
