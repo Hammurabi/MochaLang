@@ -300,106 +300,126 @@ namespace MochaOpcodeProvider
 		'-',
 	};
 
-	std::string keywords[] = {"for", "while", "class", "struct", "goto", "mark", };
+	//std::string keywords[] = {"for", "while", "class", "struct", "goto", "mark", "" };
 
-	bool hasNext(std::string string, int index)
+	bool hasNext(const std::string string, int index)
 	{
 		return string.size() > (index + 1);
 	}
 
-	char getNext(std::string string, int index)
+	char getNext(const std::string string, int index)
 	{
 		return string.at(index + 1);
 	}
 
-	bool isSpecial(std::string str, std::vector<token>& tokens, int line, int offset, int spaces)
+	bool isSpecial(const std::string str, const std::vector<token>& tokens, const int line, const int offset, const int spaces)
 	{
 		if (str == "->")
 		{
+			return true;
 		}
 		else if (str == "..")
 		{
+			return true;
 		}
 		else if (str == "<<")
 		{
+			return true;
 		}
 		else if (str == ">>")
 		{
+			return true;
 		}
 		else if (str == "++")
 		{
+			return true;
 		}
 		else if (str == "--")
 		{
+			return true;
 		}
 		else if (str == "**")
 		{
+			return true;
 		}
 		else if (str == "//")
 		{
+			return true;
 		}
 		else if (str == "==")
 		{
+			return true;
 		}
 		else if (str == "+=")
 		{
+			return true;
 		}
 		else if (str == "-=")
 		{
+			return true;
 		}
 		else if (str == "*=")
 		{
+			return true;
 		}
 		else if (str == "/=")
 		{
+			return true;
 		}
 		else if (str == "%=")
 		{
+			return true;
 		}
 		else if (str == "!=")
 		{
+			return true;
 		}
 		else if (str == "&=")
 		{
+			return true;
 		}
 		else if (str == "&&")
 		{
+			return true;
 		}
 		else if (str == "||")
 		{
+			return true;
 		}
 		else if (str == "^=")
 		{
+			return true;
 		}
 		else if (str == "|=")
 		{
+			return true;
 		}
 
 		return false;
 	}
 
-	bool isKeyword(std::string str, std::vector<token>& tokens)
-	{
-		for (int i = 0; i < 6; i++)
-		{
-			if (str == keywords[i])
-			{
-				
-				return true;
-			}
-		}
+	//bool isKeyword(const std::string str, std::vector<token>& tokens)
+	//{
+	//	for (int i = 0; i < 6; i++)
+	//	{
+	//		if (str == keywords[i])
+	//		{
+	//			
+	//			return true;
+	//		}
+	//	}
 
-		return false;
-	}
+	//	return false;
+	//}
 
-	std::string typeof(std::string str)
+	std::string typeof(const std::string str)
 	{
 		for (int i = 0; i < str.length(); i++) if (isalpha(str.at(i))) return "IDENTIFIER";
 
 		return "NUMBER";
 	}
 
-	std::string chartypeof(char c)
+	std::string chartypeof(const char c)
 	{
 		if (c == '(') return "OPEN_PARENTHESIS";
 		else if (c == ')') return "CLOSED_PARENTHESIS";
@@ -432,64 +452,82 @@ namespace MochaOpcodeProvider
 	std::vector<token> lex(std::string program, std::map<std::string, std::string> lexmap)
 	{
 		std::vector<token> tokens;
-		std::string        builder;
-		builder = "";
+		std::string        builder = "";
 
 #define N (hasNext(program, i) ? getNext(program, i) : '\0')
-#define L (hasNext(program, i) ? (getNext(program, i) + "") : "")
-#define C program.at(i)
+//#define L (hasNext(program, i) ? (getNext(program, i) + "") : "")
+//#define C program.at(i)
 
 		int line = 0;
 		int offset = 0;
 		int spaces = 0;
 
 		bool isIdentifier = false;
-		bool isNumber = false;
+
+		using namespace std;
 
 		for (int i = 0; i < program.size(); i++)
 		{
+			char C = program.at(i);
+
 			if (C == '\n')
 			{
 				line++;
 				offset = 1;
 				continue;
 			}
-			else if (C == ' ') spaces++;
-			else if (C == '\t') spaces += 4;
-			else spaces = 0;
-
-			std::string n = L;
-
-			std::string cn("" + C + n);
-
-			if (isSpecial(cn, tokens, line, offset, spaces))
-			{
-				i++;
-				offset += 2;
-				continue;
-			}
-			else
-			{
-				if (isIdentifier && (C == '_' || C == '$' || isalnum(C))) builder.append(C + "");
-				else if (isIdentifier)
+			else if (C == ' ') {
+				spaces++;
+				if (isIdentifier)
 				{
 					isIdentifier = false;
 
 					token t;
-					t.name = typeof(builder);
+					t.name = std::string(typeof(builder));
 					t.value = std::string(builder.c_str());
-					std::cout << t.value << std::endl;
 					t.vector.line = line;
 					t.vector.numspaces = 0;
 					t.vector.offset = spaces;
 					tokens.push_back(t);
 					builder = "";
 				}
+				continue;
+			}
+			else if (C == '\t') spaces += 4;
+			else spaces = 0;
 
+			char L = (hasNext(program, i) ? program.at(i + 1) : '\0');
 
+			std::string cn = "";
+			cn = program.at(i) + L;
+			
+			if (isSpecial(cn, tokens, line, offset, spaces))
+			{
+				offset += 2;
+				continue;
+			}
+			else
+			{
+				if (isIdentifier && (C == '_' || C == '$' || isalnum(C)))
+				{
+					builder = builder + program.at(i);
+				}
+				else if (isIdentifier)
+				{
+					isIdentifier = false;
+
+					token t;
+					t.name = std::string(typeof(builder));
+					t.value = std::string(builder.c_str());
+					t.vector.line = line;
+					t.vector.numspaces = 0;
+					t.vector.offset = spaces;
+					tokens.push_back(t);
+					builder = "";
+				}
 				else if (!isIdentifier && (C == '_' || C == '$' || isalnum(C)))
 				{
-					builder.append(C + "");
+					builder = program.at(i);// +"");
 					isIdentifier = true;
 				}
 				//else if (!isNumber && ( (!isalpha(C) && isalnum(C)) || C == '_'))
@@ -546,7 +584,7 @@ namespace MochaOpcodeProvider
 			getline(file, stline);
 
 			int index = stline.find("//");
-			if (index == -1) index = stline.length() - 1;
+			if (index == -1) index = stline.length();
 			string.append(stline.substr(0, index) + '\n');
 		}
 
