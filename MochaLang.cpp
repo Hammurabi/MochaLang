@@ -10,8 +10,22 @@
 #include <stack>
 #include <vector>
 
+struct filevector
+{
+	unsigned int line;
+	unsigned int offset;
+	/*
+		The number of spaces before this vector
+	*/
+	unsigned int numspaces;
+};
+
 struct token {
-	enum {};
+	std::string type;
+	std::string name;
+	std::string value;
+	
+	filevector  vector;
 };
 
 
@@ -268,8 +282,78 @@ namespace MochaRuntimeEnvironment
 #include <fstream>
 #include <cstdlib>
 
+#include <map>
+
 namespace MochaOpcodeProvider
 {
+	char SPECIAL[] = {
+		'\\',
+		'.',
+		'+',
+		'-',
+		'*',
+		'/',
+		'-',
+	};
+
+	bool hasNext(std::string string, int index)
+	{
+		return string.size() > (index + 1);
+	}
+
+	char getNext(std::string string, int index)
+	{
+		return string.at(index + 1);
+	}
+
+	bool isSpecial(std::string str, std::vector<token>& tokens)
+	{
+		if (str == "->")
+		{
+		}
+		else if (str == "..")
+		{
+		}
+		else if (str == "<<")
+		{
+		}
+		else if (str == ">>")
+		{
+		}
+
+		return false;
+	}
+
+	std::vector<token> lex(std::string program, std::map<std::string, std::string> lexmap)
+	{
+		std::vector<token> tokens;
+		std::string        builder;
+
+#define N (hasNext(program, i) ? getNext(program, i) : '\0')
+#define L (hasNext(program, i) ? (getNext(program, i) + "") : "")
+#define C program.at(i)
+
+
+		for (int i = 0; i < program.size(); i++)
+		{
+			std::string n = L;
+
+			std::string cn("" + C + n);
+
+			if (isSpecial(cn, tokens)) i++;
+			else
+			{
+
+			}
+		}
+
+#undef N
+#undef L
+#undef C
+
+		return tokens;
+	}
+
 	void compile(std::string program)
 	{
 	}
@@ -296,7 +380,6 @@ namespace MochaOpcodeProvider
 
 int main()
 {
-	std::cout << "hi " << std::endl;
 	std::cout << MochaOpcodeProvider::loadText(".\\lang\\sample.ma");
 
 	while (true) {}
