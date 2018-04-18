@@ -21,7 +21,6 @@ struct filevector
 };
 
 struct token {
-	std::string type;
 	std::string name;
 	std::string value;
 	
@@ -320,8 +319,31 @@ namespace MochaOpcodeProvider
 		else if (str == ">>")
 		{
 		}
+		else if (str == "++")
+		{
+		}
+		else if (str == "--")
+		{
+		}
+		else if (str == "**")
+		{
+		}
+		else if (str == "//")
+		{
+		}
 
 		return false;
+	}
+
+	bool isKeyword(std::string str, std::vector<token>& tokens)
+	{
+	}
+
+	std::string typeof(std::string str)
+	{
+		for (int i = 0; i < str.length(); i++) if (isalpha(str.at(i))) return "identifier";
+
+		return "integer";
 	}
 
 	std::vector<token> lex(std::string program, std::map<std::string, std::string> lexmap)
@@ -333,17 +355,77 @@ namespace MochaOpcodeProvider
 #define L (hasNext(program, i) ? (getNext(program, i) + "") : "")
 #define C program.at(i)
 
+		int line = 0;
+		int offset = 0;
+		int spaces = 0;
+
+		bool isIdentifier = false;
+		bool isNumber = false;
 
 		for (int i = 0; i < program.size(); i++)
 		{
+			if (C == '\n')
+			{
+				line++;
+				offset = 1;
+			}
+			else if (C == ' ') spaces++;
+
 			std::string n = L;
 
 			std::string cn("" + C + n);
 
-			if (isSpecial(cn, tokens)) i++;
+			if (isSpecial(cn, tokens))
+			{
+				i++;
+				offset += 2;
+			}
 			else
 			{
+				if (isIdentifier && (C == '_' || C == '$' || isalnum(C))) builder.append(C + "");
+				else if (isIdentifier)
+				{
+					isIdentifier = false;
 
+					token t;
+					t.name = "identifier";
+					t.value = std::string(builder);
+					t.vector.line = line;
+					t.vector.numspaces = 0;
+					t.vector.offset = spaces;
+					tokens.push_back(t);
+				}
+
+
+				else if (!isIdentifier && (C == '_' || C == '$' || isalnum(C)))
+				{
+					builder.append(C + "");
+					isIdentifier = true;
+				}
+				//else if (!isNumber && ( (!isalpha(C) && isalnum(C)) || C == '_'))
+				//{
+				//	builder.append(C + "");
+				//	isNumber = true;
+				//}
+				//else if ((!isalpha(C) && isalnum(C)) && isNumber)
+				//{
+				//	builder.append(C + "");
+				//}
+				//else if (!(!isalpha(C) && isalnum(C)) && isNumber)
+				//{
+
+				//}
+				else {
+					token t;
+					t.name = "";
+					t.value = C;
+					t.vector.line = line;
+					t.vector.numspaces = 0;
+					t.vector.offset = spaces;
+					tokens.push_back(t);
+				}
+
+				offset++;
 			}
 		}
 
@@ -371,7 +453,10 @@ namespace MochaOpcodeProvider
 		while (!file.eof())
 		{
 			getline(file, stline);
-			string.append(stline + '\n');
+
+			int index = stline.find("//");
+			if (index == -1) index = stline.length() - 1;
+			string.append(stline.substr(0, index) + '\n');
 		}
 
 		return string;
