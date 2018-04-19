@@ -52,3 +52,6 @@ Debug/MochaLang.pch
 Debug/
 Debug/MochaLang.tlog
 #
+Debug/vc140.idb
+*.idb
+Debug/vc140.pdb

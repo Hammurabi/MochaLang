@@ -17,5 +17,8 @@
     int b = 15_600
     print 5_222_222_222 * 12 + 6
 
+    for i < 10
+      print i
+
     if a == b
     print true
