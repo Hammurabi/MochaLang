@@ -404,6 +404,24 @@ namespace MochaOpcodeProvider
 
 		if (C == '\n')
 		{
+			if (isIdentifier)
+			{
+				isIdentifier = false;
+
+				token t;
+
+				t.name = std::string(typeof(builder));
+				t.value = std::string(builder.c_str());
+
+				t.vector.line = line;
+				t.vector.numspaces = spaces;
+				t.vector.offset = offset;
+
+				tokens.push_back(t);
+
+				builder = "";
+			}
+
 			line++;
 			offset = 1;
 			spaces = 0;
@@ -496,7 +514,6 @@ namespace MochaOpcodeProvider
 			{
 				builder = program.at(i);// +"");
 				isIdentifier = true;
-				countspaces = false;
 			}
 			//else if (!isNumber && ( (!isalpha(C) && isalnum(C)) || C == '_'))
 			//{
@@ -511,7 +528,7 @@ namespace MochaOpcodeProvider
 			//{
 
 			//}
-			else if (C != ' ' && C != '\n' && C != '\t')
+			if (C != ' ' && C != '\n' && C != '\t' && !isIdentifier)
 			{
 				std::string check;
 				check = program.at(i);
@@ -546,7 +563,7 @@ namespace MochaOpcodeProvider
 		int line = 0;
 		int offset = 0;
 		int spaces = 0;
-		bool countspaces = 1;
+		bool countspaces = true;
 
 		bool isIdentifier = false;
 
@@ -568,8 +585,6 @@ namespace MochaOpcodeProvider
 		while (tokens.size() > 0)
 		{
 			token& t = tokens[tokens.size() - 1];
-
-
 		}
 	}
 
