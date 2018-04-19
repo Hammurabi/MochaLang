@@ -332,55 +332,89 @@ namespace MochaOpcodeProvider
 
 		GRAMMAR_RULE(std::string n, std::vector<std::string> r) : name(n), rules(r) {}
 
-		bool checkMatch(TokenStream stream)
+		void parse(TokenStream& stream, std::vector<token>& tokens)
 		{
+			using namespace std;
 			int i = stream.index;
 
+			int amt_spaces = 0;
 			token* lookoutfor = 0;
-
-			for (int i = 0; i < rules.size(); i++)
+			
+			if (rules[0] == "[WHITESPACE(>)]")
 			{
-				token t = stream.next();
-				token last = stream.previewLast();
+				int current_space = stream.tokens[i].vector.numspaces;
+				int last____space = stream.previewLast().vector.numspaces;
 
-				//SPECIAL TOKEN ACCESS
-				if (rules[i].at(0) == '*')
+				if (current_space > last____space)
 				{
-					lookoutfor = &stream.previewNext();
-				} else if (rules[i].at(0) == '[')
-				{
-					if (rules[i] == "[WHITESPACE(>)]")
-					{
-						if (!(t.vector.numspaces > last.vector.numspaces)) return false;
-					}else if (rules[i] == "[WHITESPACE(<)]")
-					{
-						if (!(t.vector.numspaces < last.vector.numspaces)) return false;
-					} else if (rules[i] == "[WHITESPACE(>=)]")
-					{
-						if (!(t.vector.numspaces >= last.vector.numspaces)) return false;
-					}
-					else if (rules[i] == "[WHITESPACE(<=)]")
-					{
-						if (!(t.vector.numspaces <= last.vector.numspaces)) return false;
-					}
-					else if (rules[i] == "[endl]")
-					{
-						//This part will never be used hopefully.
-					}
-				}
-				else if (t.name != rules[i])
-				{
-					if (lookoutfor)
+					while (stream.next().vector.numspaces > last____space)
 					{
 
-					}
-					else
-					{
-						stream.index = i;
-						return false;
 					}
 				}
 			}
+
+
+
+
+
+
+			else stream.index = i;
+		}
+
+		bool checkMatch(TokenStream stream)
+		{
+			using namespace std;
+			int i = stream.index;
+
+			int amt_spaces = 0;
+			token* lookoutfor = 0;
+
+			
+
+			//for (int i = 0; i < rules.size(); i++)
+			//{
+			//	token t = stream.next();
+			//	token last = stream.previewLast();
+
+			//	//SPECIAL TOKEN ACCESS
+			//	if (rules[i].at(0) == '*')
+			//	{
+			//		lookoutfor = &stream.previewNext();
+			//	} else if (rules[i].at(0) == '[')
+			//	{
+			//		if (rules[i] == "[WHITESPACE(>)]")
+			//		{
+			//			if (!(t.vector.numspaces > last.vector.numspaces)) return false;
+			//		}else if (rules[i] == "[WHITESPACE(<)]")
+			//		{
+			//			if (!(t.vector.numspaces < last.vector.numspaces)) return false;
+			//		} else if (rules[i] == "[WHITESPACE(>=)]")
+			//		{
+			//			if (!(t.vector.numspaces >= last.vector.numspaces)) return false;
+			//		}
+			//		else if (rules[i] == "[WHITESPACE(<=)]")
+			//		{
+			//			if (!(t.vector.numspaces <= last.vector.numspaces)) return false;
+			//		}
+			//		else if (rules[i] == "[endl]")
+			//		{
+			//			//This part will never be used hopefully.
+			//		}
+			//	}
+			//	else if (t.name != rules[i])
+			//	{
+			//		if (lookoutfor)
+			//		{
+
+			//		}
+			//		else
+			//		{
+			//			stream.index = i;
+			//			return false;
+			//		}
+			//	}
+			//}
 
 			return true;
 		}
