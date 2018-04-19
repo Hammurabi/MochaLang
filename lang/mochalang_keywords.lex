@@ -1,6 +1,8 @@
 if
 while
 for
+then
+foreach
 class
 struct
 and

@@ -20,5 +20,5 @@
     for i < 10
       print i
 
-    if a == b
-    print true
+    if a == b then
+      print true

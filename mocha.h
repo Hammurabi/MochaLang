@@ -450,6 +450,8 @@ namespace MochaOpcodeProvider
 			builder = "";
 		}
 		else if (C == '\t') spaces += 4;
+		else
+			countspaces = false;
 
 		char L = (hasNext(program, i) ? program.at(i + 1) : '\0');
 
@@ -494,6 +496,7 @@ namespace MochaOpcodeProvider
 			{
 				builder = program.at(i);// +"");
 				isIdentifier = true;
+				countspaces = false;
 			}
 			//else if (!isNumber && ( (!isalpha(C) && isalnum(C)) || C == '_'))
 			//{
@@ -521,7 +524,6 @@ namespace MochaOpcodeProvider
 				t.vector.offset = offset;
 				t.precedence = getprecedence(check);
 				tokens.push_back(t);
-				countspaces = false;
 			}
 			else {
 			}
@@ -557,9 +559,21 @@ namespace MochaOpcodeProvider
 		return tokens;
 	}
 
-	void parse(std::vector<std::string>& tokens)
+#define token_stack std::vector<token>
+
+	void parse(token_stack& tokens)
 	{
+		token_stack tokenout;
+
+		while (tokens.size() > 0)
+		{
+			token& t = tokens[tokens.size() - 1];
+
+
+		}
 	}
+
+#undef token_stack
 
 	void compile(std::string program)
 	{
