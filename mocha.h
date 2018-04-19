@@ -290,12 +290,35 @@ namespace MochaRuntimeEnvironment
 
 namespace MochaOpcodeProvider
 {
+#define checkIndex(x, y) ((x >= y) ? 0 : x ++)
+	struct TokenStream
+	{
+		std::vector<token> tokens;
+		unsigned int index;
+
+		TokenStream(std::vector<token> ts) : tokens(ts) {}
+
+		token& next()
+		{
+			return tokens[checkIndex(index, tokens.size())];
+		}
+
+		unsigned int remaining()
+		{
+			return tokens.size() - index;
+		}
+	};
+	
 	struct GRAMMAR_RULE
 	{
 		std::string name;
 		std::vector<std::string> rules;
 
 		GRAMMAR_RULE(std::string n, std::vector<std::string> r) : name(n), rules(r) {}
+
+		bool checkMatch(TokenStream stream)
+		{
+		}
 	};
 
 	std::vector<GRAMMAR_RULE> grammar;
@@ -592,10 +615,18 @@ namespace MochaOpcodeProvider
 	void parse(token_stack& tokens)
 	{
 		token_stack tokenout;
+		TokenStream stream(tokens);
 
-		while (tokens.size() > 0)
+		while (stream.remaining() > 0)
 		{
-			token& t = tokens[tokens.size() - 1];
+			//token& t = tokens[tokens.size() - 1];
+
+			for (int i = 0; i < grammar.size(); i++)
+			{
+				GRAMMAR_RULE& rule = grammar[i];
+
+				if (rule.checkMatch(stream));
+			}
 		}
 	}
 
