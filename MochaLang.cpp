@@ -33,6 +33,8 @@ int main()
 
 	std::vector<token> tokens = MochaOpcodeProvider::lex(MochaOpcodeProvider::loadText(".\\lang\\sample.ma"), map);
 
+	MochaOpcodeProvider::parse(tokens);
+
 	for (int i = 0; i < tokens.size(); i++)
 	{
 		tokens[i].print();

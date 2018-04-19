@@ -300,7 +300,7 @@ namespace MochaOpcodeProvider
 	struct TokenStream
 	{
 		std::vector<token> tokens;
-		unsigned int index;
+		unsigned int index = 0;
 
 		TokenStream(std::vector<token> ts) : tokens(ts) {}
 
@@ -339,26 +339,19 @@ namespace MochaOpcodeProvider
 
 			int amt_spaces = 0;
 			token* lookoutfor = 0;
+
+			int last____space = stream.previewLast().vector.numspaces;
+			int current_space = stream.next().vector.numspaces; 
 			
-			if (rules[0] == "[WHITESPACE(>)]")
+			if (rules[0] == "[WHITESPACE(>)]" && (current_space > last____space))
 			{
-				int current_space = stream.tokens[i].vector.numspaces;
-				int last____space = stream.previewLast().vector.numspaces;
+				tokens.push_back(token(stream.previewLast()));
 
-				if (current_space > last____space)
+				while (stream.next().vector.numspaces > last____space)
 				{
-					while (stream.next().vector.numspaces > last____space)
-					{
-
-					}
+					tokens.push_back(token(stream.previewLast()));
 				}
 			}
-
-
-
-
-
-
 			else stream.index = i;
 		}
 
@@ -724,9 +717,16 @@ namespace MochaOpcodeProvider
 			{
 				GRAMMAR_RULE& rule = grammar[i];
 
-				if (rule.checkMatch(stream));
+				rule.parse(stream, tokenout);
 			}
+
+			stream.next();
 		}
+
+		std::cout << "---------------------------------------------------\n";
+
+		for (int i = 0; i < tokenout.size(); i++)
+			tokenout[i].print();
 	}
 
 #undef token_stack
