@@ -8,4 +8,9 @@ the integrity of low level game engine code, being able to call native functions
 will eliminate the need to expose parts of your engine which makes reverse engineering
 and hacking or modding harder without a proper modding SDK.
 
+Language Specification And Goals:
+*C like syntax ?
+*Pointers ?
+*Inheritance X
+
 /////////////////////////////////////////////////////////////////////////////
