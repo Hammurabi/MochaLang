@@ -48,3 +48,6 @@ Temporary Items
 Debug/MochaLang.log
 *.obj
 Debug/MochaLang.pch
+Debug/
+Debug/MochaLang.tlog
+#
