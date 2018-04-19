@@ -258,6 +258,10 @@ void addition(Stack& stack)
 {
 }
 
+void multiply(Stack& stack)
+{
+}
+
 void run(Buffer<unsigned short> buffer)
 {
 	Stack stack;
@@ -271,7 +275,7 @@ void run(Buffer<unsigned short> buffer)
 		case ADD: addition(stack);
 		case SUB: addition(stack);
 		case DIV: addition(stack);
-		case MUL: addition(stack);
+		case MUL: multiply(stack);
 		case MOD: addition(stack);
 
 		default:
@@ -291,6 +295,7 @@ namespace MochaRuntimeEnvironment
 namespace MochaOpcodeProvider
 {
 #define checkIndex(x, y) ((x >= y) ? 0 : x ++)
+#define checkIndex1(x, y) ((x >= y) ? 0 : x)
 #define checkIndex0(x) ((x <= 0) ? 0 : x - 1)
 	struct TokenStream
 	{
@@ -307,6 +312,11 @@ namespace MochaOpcodeProvider
 		token& previewLast()
 		{
 			return tokens[checkIndex0(index)];
+		}
+
+		token& previewNext()
+		{
+			return tokens[checkIndex1(index, tokens.size())];
 		}
 
 		unsigned int remaining()
@@ -326,6 +336,8 @@ namespace MochaOpcodeProvider
 		{
 			int i = stream.index;
 
+			token* lookoutfor = 0;
+
 			for (int i = 0; i < rules.size(); i++)
 			{
 				token t = stream.next();
@@ -334,6 +346,7 @@ namespace MochaOpcodeProvider
 				//SPECIAL TOKEN ACCESS
 				if (rules[i].at(0) == '*')
 				{
+					lookoutfor = &stream.previewNext();
 				} else if (rules[i].at(0) == '[')
 				{
 					if (rules[i] == "[WHITESPACE(>)]")
@@ -352,16 +365,22 @@ namespace MochaOpcodeProvider
 					}
 					else if (rules[i] == "[endl]")
 					{
+						//This part will never be used hopefully.
 					}
 				}
 				else if (t.name != rules[i])
 				{
-					stream.index = i;
-					return false;
+					if (lookoutfor)
+					{
+
+					}
+					else
+					{
+						stream.index = i;
+						return false;
+					}
 				}
 			}
-
-
 
 			return true;
 		}

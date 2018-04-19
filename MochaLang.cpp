@@ -21,15 +21,15 @@ int main()
 	MochaOpcodeProvider::loadGrammarFile(".\\lang\\Mochalang.gr");
 	//std::cout << MochaOpcodeProvider::loadText(".\\lang\\sample.ma");
 
-	for (int i = 0; i < MochaOpcodeProvider::grammar.size(); i++)
-	{
-		MochaOpcodeProvider::GRAMMAR_RULE rule = MochaOpcodeProvider::grammar[i];
+	//for (int i = 0; i < MochaOpcodeProvider::grammar.size(); i++)
+	//{
+	//	MochaOpcodeProvider::GRAMMAR_RULE rule = MochaOpcodeProvider::grammar[i];
 
-		for (int j = 0; j < rule.rules.size(); j++)
-		{
-			std::cout << rule.name << " " << rule.rules[j] << std::endl;
-		}
-	}
+	//	for (int j = 0; j < rule.rules.size(); j++)
+	//	{
+	//		std::cout << rule.name << " " << rule.rules[j] << std::endl;
+	//	}
+	//}
 
 	std::vector<token> tokens = MochaOpcodeProvider::lex(MochaOpcodeProvider::loadText(".\\lang\\sample.ma"), map);
 
