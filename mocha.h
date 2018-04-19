@@ -291,6 +291,7 @@ namespace MochaRuntimeEnvironment
 namespace MochaOpcodeProvider
 {
 #define checkIndex(x, y) ((x >= y) ? 0 : x ++)
+#define checkIndex0(x) ((x <= 0) ? 0 : x - 1)
 	struct TokenStream
 	{
 		std::vector<token> tokens;
@@ -301,6 +302,11 @@ namespace MochaOpcodeProvider
 		token& next()
 		{
 			return tokens[checkIndex(index, tokens.size())];
+		}
+
+		token& previewLast()
+		{
+			return tokens[checkIndex0(index)];
 		}
 
 		unsigned int remaining()
@@ -318,6 +324,38 @@ namespace MochaOpcodeProvider
 
 		bool checkMatch(TokenStream stream)
 		{
+			int i = stream.index;
+
+			for (int i = 0; i < rules.size(); i++)
+			{
+				token t = stream.next();
+				token last = stream.previewLast();
+
+				//SPECIAL TOKEN ACCESS
+				if (rules[i].at(0) == '[')
+				{
+					if (rules[i] == "[WHITESPACE(>)]")
+					{
+						if (!(last.vector.numspaces < t.vector.numspaces)) return false;
+					}else if (rules[i] == "[WHITESPACE(<)]")
+					{
+					} else if (rules[i] == "[WHITESPACE(>=)]")
+					{
+					}
+					else if (rules[i] == "[WHITESPACE(<=)]")
+					{
+					}
+				}
+				else if (t.name != rules[i])
+				{
+					stream.index = i;
+					return false;
+				}
+			}
+
+
+
+			return true;
 		}
 	};
 

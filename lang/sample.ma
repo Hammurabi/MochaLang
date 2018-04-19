@@ -22,3 +22,9 @@
 
     if a == b then
       print true
+
+int dosomething(int x, int y)
+  return x + y
+
+type add(type b)
+  return this.val + b.val
