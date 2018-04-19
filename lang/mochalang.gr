@@ -30,7 +30,7 @@ BOOL_LESSTHANEQUALS
   [TOKEN] LESS_EQUALS [TOKEN] [stop]
 
 STATEMENT
-* [endl] [stop]
+* [stop]
 BODY
   [WHITESPACE(>)] * [WHITESPACE(<=)] [stop]
 PARENTHESIS

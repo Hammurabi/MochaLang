@@ -332,17 +332,25 @@ namespace MochaOpcodeProvider
 				token last = stream.previewLast();
 
 				//SPECIAL TOKEN ACCESS
-				if (rules[i].at(0) == '[')
+				if (rules[i].at(0) == '*')
+				{
+				} else if (rules[i].at(0) == '[')
 				{
 					if (rules[i] == "[WHITESPACE(>)]")
 					{
-						if (!(last.vector.numspaces < t.vector.numspaces)) return false;
+						if (!(t.vector.numspaces > last.vector.numspaces)) return false;
 					}else if (rules[i] == "[WHITESPACE(<)]")
 					{
+						if (!(t.vector.numspaces < last.vector.numspaces)) return false;
 					} else if (rules[i] == "[WHITESPACE(>=)]")
 					{
+						if (!(t.vector.numspaces >= last.vector.numspaces)) return false;
 					}
 					else if (rules[i] == "[WHITESPACE(<=)]")
+					{
+						if (!(t.vector.numspaces <= last.vector.numspaces)) return false;
+					}
+					else if (rules[i] == "[endl]")
 					{
 					}
 				}
