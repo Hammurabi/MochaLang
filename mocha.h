@@ -290,7 +290,16 @@ namespace MochaRuntimeEnvironment
 
 namespace MochaOpcodeProvider
 {
-	std::vector<std::vector<std::string>> grammar;
+	struct GRAMMAR_RULE
+	{
+		std::string name;
+		std::vector<std::string> rules;
+
+		GRAMMAR_RULE(std::string n, std::vector<std::string> r) : name(n), rules(r) {}
+	};
+
+	std::vector<GRAMMAR_RULE> grammar;
+	//std::vector<void(*)()>				  grammar_;
 
 	char SPECIAL[] = {
 		'\\',
@@ -690,26 +699,45 @@ namespace MochaOpcodeProvider
 
 			precedence[arg] = std::stoi(pnc);
 			types[arg] = nam;
-			
-			//std::cout << arg << std::endl;
-			//std::cout << nam << std::endl;
-			//std::cout << pnc << std::endl;
-
-			//getline(file, stline);
-			//if (stline.length() == 0) continue;
-
-			//std::istringstream stream(stline);
-
-
-
-			//int index = stline.find(" ");
-			//if (index == -1) index = stline.length();
-			//precedence[stline.substr(0, index)] = std::stoi(stline.substr(index + 1));
-
-			//string.append(stline.substr(0, index) + '\n');
 		}
 
 		return string;
+	}
+
+	std::string loadncheck(std::string& s, std::ifstream& f)
+	{
+		f >> s;
+		return s;
+	}
+
+	void loadGrammarFile(std::string location)
+	{
+		using namespace std;
+		ifstream file;
+
+		file.open(location.c_str());
+		if (!file.is_open())
+			return;
+
+		string arg;
+		string name;
+		string version;
+
+		file >> version;
+
+		while (file.good())
+		{
+			vector<string> grammar_rule;
+			file >> name;
+
+			while (loadncheck(arg, file) != "[stop]")
+			{
+				grammar_rule.push_back(arg);
+			}
+
+			GRAMMAR_RULE rule(name, grammar_rule);
+			grammar.push_back(rule);
+		}
 	}
 }
 
