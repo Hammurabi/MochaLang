@@ -290,6 +290,8 @@ namespace MochaRuntimeEnvironment
 
 namespace MochaOpcodeProvider
 {
+	std::vector<std::vector<std::string>> grammar;
+
 	char SPECIAL[] = {
 		'\\',
 		'.',
