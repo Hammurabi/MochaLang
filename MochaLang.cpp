@@ -303,6 +303,7 @@ namespace MochaOpcodeProvider
 
 	std::map<std::string, std::string> specials;
 	std::vector<std::string>           keywords;
+	std::map<std::string, int>		   precedence;
 
 	//std::string keywords[] = {"for", "while", "class", "struct", "goto", "mark", "" };
 
@@ -393,7 +394,7 @@ namespace MochaOpcodeProvider
 		{
 			line++;
 			offset = 1;
-			spaces = 1;
+			spaces = 0;
 			countspaces = true;
 			return;
 		}
@@ -590,13 +591,60 @@ namespace MochaOpcodeProvider
 
 		return string;
 	}
+
+	std::string loadKeywords(std::string location)
+	{
+		std::string string("");
+		std::string stline("");
+		std::ifstream file;
+
+		file.open(location.c_str());
+		if (!file.is_open())
+			return "";
+
+		while (!file.eof())
+		{
+			getline(file, stline);
+			if (stline.length() == 0) continue;
+
+			keywords.push_back(stline);
+		}
+
+		return string;
+	}
+
+	std::string loadPrecedence(std::string location)
+	{
+		std::string string("");
+		std::string stline("");
+		std::ifstream file;
+
+		file.open(location.c_str());
+		if (!file.is_open())
+			return "";
+
+		while (!file.eof())
+		{
+			getline(file, stline);
+			if (stline.length() == 0) continue;
+
+			int index = stline.find(" ");
+			if (index == -1) index = stline.length();
+			precedence[stline.substr(0, index)] = std::stoi(stline.substr(index + 1));
+			
+			string.append(stline.substr(0, index) + '\n');
+		}
+
+		return string;
+	}
 }
 
 int main()
 {
 	std::map<std::string, std::string> map;
 	MochaOpcodeProvider::loadSpecials(".\\lang\\mochalang_specials.lex");
-	//MochaOpcodeProvider::loadSpecials(".\\lang\\mochalang_keywords.lex");
+	MochaOpcodeProvider::loadKeywords(".\\lang\\mochalang_keywords.lex");
+	MochaOpcodeProvider::loadPrecedence(".\\lang\\mochalang_precedence.lex");
 	std::cout << MochaOpcodeProvider::loadText(".\\lang\\sample.ma");
 
 	std::vector<token> tokens = MochaOpcodeProvider::lex(MochaOpcodeProvider::loadText(".\\lang\\sample.ma"), map);

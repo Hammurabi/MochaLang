@@ -8,9 +8,14 @@
 //    catch e:
 //    	e:print()
 
+#define false 0
+#define true  1
+#define bit_set(x, y)
 
     //a number can start with _ and can be seperated with _ for clarity
-   print 5_222_222_222 * 12 + 6
+    int a = 1_560_712
+    int b = 15_600
+    print 5_222_222_222 * 12 + 6
 
-   if a == b
-   ->
+    if a == b
+    print true
