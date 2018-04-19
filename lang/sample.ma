@@ -9,8 +9,8 @@
 //    	e:print()
 
 
-   print 5 * 12 + 6
+    //a number can start with _ and can be seperated with _ for clarity
+   print 5_222_222_222 * 12 + 6
 
    if a == b
-
    ->

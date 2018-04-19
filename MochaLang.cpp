@@ -302,6 +302,7 @@ namespace MochaOpcodeProvider
 	};
 
 	std::map<std::string, std::string> specials;
+	std::vector<std::string>           keywords;
 
 	//std::string keywords[] = {"for", "while", "class", "struct", "goto", "mark", "" };
 
@@ -317,185 +318,6 @@ namespace MochaOpcodeProvider
 
 	bool isSpecial(const std::string str, std::vector<token>& tokens, const int line, const int offset, const int spaces)
 	{
-		//if (str == "->")
-		//{
-		//	token t;
-		//	t.name = "ARROW";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "..")
-		//{
-		//	token t;
-		//	t.name = "CONCATENATE";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "<<")
-		//{
-		//	token t;
-		//	t.name = "LEFT_SHIFT";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == ">>")
-		//{
-		//	token t;
-		//	t.name = "RIGHT_SHIFT";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "++")
-		//{
-		//	return true;
-		//}
-		//else if (str == "--")
-		//{
-		//	token t;
-		//	t.name = "UNARY_MINUS";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "**")
-		//{
-		//	return true;
-		//}
-		//else if (str == "//")
-		//{
-		//	return true;
-		//}
-		//else if (str == "==")
-		//{
-		//	token t;
-		//	t.name = "ASSERT_EQUALS";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "+=")
-		//{
-		//	token t;
-		//	t.name = "PLUS_EQUAL";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "-=")
-		//{
-		//	return true;
-		//}
-		//else if (str == "*=")
-		//{
-		//	return true;
-		//}
-		//else if (str == "/=")
-		//{
-		//	return true;
-		//}
-		//else if (str == "%=")
-		//{
-		//	token t;
-		//	t.name = "MOD_EQUALS";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "!=")
-		//{
-		//	token t;
-		//	t.name = "ASSERT_NOT";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "&=")
-		//{
-		//	token t;
-		//	t.name = "AND_EQUALS";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "&&")
-		//{
-		//	token t;
-		//	t.name = "ASSERT_AND";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "||")
-		//{
-		//	token t;
-		//	t.name = "ASSERT_OR";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "^=")
-		//{
-		//	token t;
-		//	t.name = "XOR_EQUALS";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-		//else if (str == "|=")
-		//{
-		//	token t;
-		//	t.name = "OR_EQUALS";
-		//	t.value = str;
-		//	t.vector.line = line;
-		//	t.vector.numspaces = spaces;
-		//	t.vector.offset = offset;
-		//	tokens.push_back(t);
-		//	return true;
-		//}
-
 		if (specials.find(str) != specials.end())
 		{
 			token t;
@@ -511,23 +333,22 @@ namespace MochaOpcodeProvider
 		return false;
 	}
 
-	//bool isKeyword(const std::string str, std::vector<token>& tokens)
-	//{
-	//	for (int i = 0; i < 6; i++)
-	//	{
-	//		if (str == keywords[i])
-	//		{
-	//			
-	//			return true;
-	//		}
-	//	}
-
-	//	return false;
-	//}
-
-	std::string typeof(const std::string str)
+	bool isKeyword(const std::string str, std::vector<token>& tokens)
 	{
+		for (int i = 0; i < keywords.size(); i++)
+			if (str == keywords[i]) return true;
+
+		return false;
+	}
+
+	std::string typeof(std::string& str)
+	{
+		if (isalpha(str.at(0))) return "IDENTIFIER";
 		for (int i = 0; i < str.length(); i++) if (isalpha(str.at(i))) return "IDENTIFIER";
+
+		std::string number;
+		for (int i = 0; i < str.length(); i++) if (!isalpha(str.at(i)) && isalnum(str.at(i))) number += str.at(i);
+		str = number;
 
 		return "NUMBER";
 	}
@@ -775,6 +596,7 @@ int main()
 {
 	std::map<std::string, std::string> map;
 	MochaOpcodeProvider::loadSpecials(".\\lang\\mochalang_specials.lex");
+	//MochaOpcodeProvider::loadSpecials(".\\lang\\mochalang_keywords.lex");
 	std::cout << MochaOpcodeProvider::loadText(".\\lang\\sample.ma");
 
 	std::vector<token> tokens = MochaOpcodeProvider::lex(MochaOpcodeProvider::loadText(".\\lang\\sample.ma"), map);
