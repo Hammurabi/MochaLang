@@ -306,17 +306,31 @@ namespace MochaOpcodeProvider
 
 		token& next()
 		{
-			return tokens[checkIndex(index, tokens.size())];
+			if (tokens.size() <= index) return tokens[tokens.size() - 1];
+			else return tokens[index++];
 		}
 
 		token& previewLast()
 		{
-			return tokens[checkIndex0(index)];
+			if ((index - 1) <= 0) return tokens[0];
+			else if ((index - 1) >= tokens.size()) return tokens[tokens.size() - 1];
+			return tokens[index - 1];
 		}
 
 		token& previewNext()
 		{
-			return tokens[checkIndex1(index, tokens.size())];
+			if (tokens.size() <= index) return tokens[tokens.size() - 1];
+			else return tokens[index];
+		}
+
+		bool hasPrevious()
+		{
+			return index > 0;
+		}
+
+		bool hasNext()
+		{
+			return index < tokens.size();
 		}
 
 		unsigned int remaining()
@@ -340,22 +354,24 @@ namespace MochaOpcodeProvider
 			int amt_spaces = 0;
 			token* lookoutfor = 0;
 
-			int last____space = stream.previewLast().vector.numspaces;
-			int current_space = stream.next().vector.numspaces; 
+			//int last____space = stream.previewLast().vector.numspaces;
+			//int current_space = stream.next().vector.numspaces; 
 			
-			if (rules[0] == "[WHITESPACE(>)]" && (current_space > last____space))
-			{
-				tokens.push_back(token(stream.previewLast()));
 
-				while (stream.next().vector.numspaces > last____space)
-				{
-					tokens.push_back(token(stream.previewLast()));
-				}
-			}
-			else stream.index = i;
+
+			//if (rules[0] == "[WHITESPACE(>)]" && (current_space > last____space))
+			//{
+			//	tokens.push_back(token(stream.previewLast()));
+
+			//	while (stream.next().vector.numspaces > last____space)
+			//	{
+			//		tokens.push_back(token(stream.previewLast()));
+			//	}
+			//}
+			//else stream.index = i;
 		}
 
-		bool checkMatch(TokenStream stream)
+		bool checkMatch(token& t, TokenStream& stream)
 		{
 			using namespace std;
 			int i = stream.index;
@@ -363,7 +379,24 @@ namespace MochaOpcodeProvider
 			int amt_spaces = 0;
 			token* lookoutfor = 0;
 
+			if (rules.size() > stream.remaining()) return false;
+
+			//check if rule is special
+			if ((rules[0] == "[WHITESPACE(>)]" && stream.hasPrevious()))
+			{
+				if (t.vector.numspaces > stream.previewLast().vector.numspaces)
+				{
+					t.print();
+					stream.previewLast().print();
+					return true;
+				}
+			} //otherwise check rulename matches token name
 			
+			if (rules[0] == t.name)
+			{
+			}
+
+			stream.index = i;
 
 			//for (int i = 0; i < rules.size(); i++)
 			//{
@@ -409,7 +442,7 @@ namespace MochaOpcodeProvider
 			//	}
 			//}
 
-			return true;
+			return false;
 		}
 	};
 
@@ -707,21 +740,43 @@ namespace MochaOpcodeProvider
 	void parse(token_stack& tokens)
 	{
 		token_stack tokenout;
-		TokenStream stream(tokens);
 
-		while (stream.remaining() > 0)
+		//I HATE THIS STREAM CLASSSSSSSS
+		//TokenStream stream(tokens);
+
+		//while (stream.remaining() > 0)
+		//{
+		//	token& t = stream.next();
+
+		//	//token& t = tokens[tokens.size() - 1];
+
+		//	for (int i = 0; i < grammar.size(); i++)
+		//	{
+		//		GRAMMAR_RULE& rule = grammar[i];
+		//		if (rule.checkMatch(t, stream))
+		//		{
+		//			std::cout << "matched: " << rule.name << std::endl;
+		//			break;
+		//		}
+		//	}
+		//}
+
+#define remaining (tokens.size())
+
+		while (remaining > 0)
 		{
-			//token& t = tokens[tokens.size() - 1];
-
-			for (int i = 0; i < grammar.size(); i++)
-			{
-				GRAMMAR_RULE& rule = grammar[i];
-
-				rule.parse(stream, tokenout);
-			}
-
-			stream.next();
+				for (int i = 0; i < grammar.size(); i++)
+				{
+					GRAMMAR_RULE& rule = grammar[i];
+					if(tokens.size() >= rule.rules.size())
+					{
+						std::cout << "matched: " << rule.name << std::endl;
+						break;
+					}
+				}
 		}
+
+#undef remaining
 
 		std::cout << "---------------------------------------------------\n";
 
