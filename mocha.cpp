@@ -6,9 +6,68 @@
 #define previewN   (vector_index < (tokens.size() - 1) ? vector_index + 1 : tokens.size() - 1)
 #define Token(x) token* x = new token()
 
-bool Parser::parse(token_stack * tokns, token_stack * tokenout, int & vector_index)
+bool parseIf(token_stack * tns, token_stack * tokenout, int & vector_index)
 {
-	if (parseBody(tokns, tokenout, vector_index)) {}
+	token_stack&tokens = *tns;
+
+	token* t = (tokens)[vector_index];
+	token* next = (tokens)[previewN];
+	token* last = (tokens)[previewP];
+
+	using namespace std;
+	if ((t->name == "IDENTIFIER") && (t->value == "if") && tns->size() >= vector_index + 2)
+	{
+		int numspaces = t->vector.numspaces;
+		Token(n);
+		n->name = "IF_STATEMENT";
+		n->precedence = 0;
+		n->value = "IF_STATEMENT";
+		n->vector = t->vector;
+
+		vector_index++;
+		
+		n->tokens.push_back(tokens[vector_index++]);
+		n->tokens.push_back(tokens[vector_index++]);
+
+		tokenout->push_back(n);
+		return true;
+	}
+	else
+		return false;
+}
+
+bool parseAssertion(token_stack * tns, token_stack * tokenout, int & vector_index)
+{
+	token_stack&tokens = *tns;
+
+	token* t = (tokens)[vector_index];
+	token* next = (tokens)[previewN];
+	token* last = (tokens)[previewP];
+
+	using namespace std;
+	if (next->name == "ASSERT_EQUALS" && tns->size() >= vector_index + 2)
+	{
+		vector_index++;
+		vector_index++;
+		int numspaces = t->vector.numspaces;
+		Token(n);
+		n->name = "ASSERT_EQUALS_EXPRESSION";
+		n->precedence = 0;
+		n->value = "ASSERT_EQUALS_EXPRESSION";
+		n->vector = t->vector;
+
+		n->tokens.push_back(t);
+		n->tokens.push_back(tokens[vector_index]);
+		tokenout->push_back(n);
+		return true;
+	}
+	else
+		return false;
+}
+
+bool parse_8(token_stack * tokns, token_stack * tokenout, int & vector_index)
+{
+	if (parseAssertion(tokns, tokenout, vector_index)) {} //8
 	else {
 		token_stack tokens = *tokns;
 
@@ -17,6 +76,55 @@ bool Parser::parse(token_stack * tokns, token_stack * tokenout, int & vector_ind
 	}
 
 	return true;
+}
+
+bool parse_ifs(token_stack * tokns, token_stack * tokenout, int & vector_index)
+{
+	if (parseIf(tokns, tokenout, vector_index)) {} //8
+	else {
+		token_stack tokens = *tokns;
+
+		token* t = (tokens)[vector_index];
+		tokenout->push_back(t);
+	}
+
+	return true;
+}
+
+bool Parser::parse(token_stack * tokns, token_stack * tokenout, int & vector_index)
+{
+	//if (parseAssertion(tokns, tokenout, vector_index)) {} //8
+	//else 
+		if (parseBody(tokns, tokenout, vector_index)) {}
+		//else if (parseIf(tokns, tokenout, vector_index)) {} //8
+	else {
+		token_stack tokens = *tokns;
+
+		token* t = (tokens)[vector_index];
+		tokenout->push_back(t);
+	}
+
+	return true;
+}
+
+void call(token_stack&tokens, token_stack&tokenout, int& vector_index, bool(*mt)(token_stack*, token_stack*, int&))
+{
+	while (vector_index < tokens.size())
+	{
+		using namespace std;
+		token* t = tokens[vector_index];
+		token* next = tokens[previewN];
+		token* last = tokens[previewP];
+
+		mt(&tokens, &tokenout, vector_index);
+
+		vector_index++;
+	}
+
+	tokens = token_stack(tokenout);
+	tokenout.clear();
+
+	vector_index = 0;
 }
 
 token_stack Parser::parse(token_stack & tokens)
@@ -37,16 +145,26 @@ token_stack Parser::parse(token_stack & tokens)
 		vector_index++;
 	}
 
+	tokens = token_stack(tokenout);
+	tokenout.clear();
+
+	vector_index = 0;
+
+	call(tokens, tokenout, vector_index, parse_8); //check assertions
+	call(tokens, tokenout, vector_index, parse_ifs); //check ifs
+
+	
+
 #undef remaining
 
 	std::cout << "---------------------------------------------------\n";
 
-	for (int i = 0; i < tokenout.size(); i++)
-		tokenout[i]->debug();
+	for (int i = 0; i < tokens.size(); i++)
+		tokens[i]->debug();
 
 	std::cout << "---------------------------------------------------\n";
 
-	return tokenout;
+	return tokens;
 }
 
 //std::map<std::string, std::string>				MochaOpcodeProvider::specials;
@@ -98,6 +216,35 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 		//*t = *empty;
 		//*next = *empty;
 		//*last = *empty;
+		return true;
+	}
+	else
+		return false;
+}
+
+bool Parser::parseAssertion(token_stack * tns, token_stack * tokenout, int & vector_index)
+{
+	token_stack&tokens = *tns;
+
+	token* t = (tokens)[vector_index];
+	token* next = (tokens)[previewN];
+	token* last = (tokens)[previewP];
+
+	using namespace std;
+	if (next->name == "ASSERT_EQUALS" && tns->size() >= vector_index + 2)
+	{
+		vector_index++;
+		vector_index++;
+		int numspaces = t->vector.numspaces;
+		Token(n);
+		n->name = "ASSERT_EQUALS_EXPRESSION";
+		n->precedence = 0;
+		n->value = "ASSERT_EQUALS_EXPRESSION";
+		n->vector = t->vector;
+
+		n->tokens.push_back(t);
+		n->tokens.push_back(tokens[vector_index]);
+		tokenout->push_back(n);
 		return true;
 	}
 	else

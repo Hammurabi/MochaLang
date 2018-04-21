@@ -298,12 +298,12 @@ struct token {
 #define previewP   (vector_index > 0 ? vector_index - 1 : 0)
 #define previewN   (vector_index < (tokens.size() - 1) ? vector_index + 1 : tokens.size() - 1)
 #define Token(x) token* x = new token()
-Token(empty);
 
 class Parser
 {
 public:
 	bool parseBody(token_stack*tns, token_stack*tokenout, int&vector_index);
+	bool parseAssertion(token_stack*tns, token_stack*tokenout, int&vector_index);
 	//bool parseParenthesis(token_stack*tns, token_stack*tokenout, int&vector_index);
 	//bool parseBraces(token_stack*tns, token_stack*tokenout, int&vector_index);
 	//bool parseClass(token_stack*tns, token_stack*tokenout, int&vector_index);

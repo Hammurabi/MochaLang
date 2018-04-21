@@ -61,3 +61,5 @@ Debug/vc140.pdb
 Debug/MochaLang.tlog/CL.command.1.tlog
 .vscode/tasks.json
 lang/stdlib.mc.txt
+*.tlog
+Debug/MochaLang.tlog/link.read.1.tlog
