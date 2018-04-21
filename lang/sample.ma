@@ -20,12 +20,20 @@
 //     for i < 10
 //       print i
 
+class test
     if a == b
       print false
       print true
       if g == c
         print false
-print truef
+        print truef
+class test
+    if a == b
+      print false
+      print true
+      if g == c
+        print false
+        print truef
 
 //
 // int dosomething(int x, int y)

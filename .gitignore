@@ -63,3 +63,6 @@ Debug/MochaLang.tlog/CL.command.1.tlog
 lang/stdlib.mc.txt
 *.tlog
 Debug/MochaLang.tlog/link.read.1.tlog
+*.tlog
+Debug/MochaLang.tlog/CL.read.1.tlog
+*.idb

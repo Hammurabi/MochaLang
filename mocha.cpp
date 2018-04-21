@@ -6,6 +6,47 @@
 #define previewN   (vector_index < (tokens.size() - 1) ? vector_index + 1 : tokens.size() - 1)
 #define Token(x)   token* x = new token()
 
+std::string vectorinfo(filevector v)
+{
+	return std::string("at line '" + std::to_string(v.line) + "' offset '" + std::to_string(v.offset) + "'");
+}
+
+void exit_(int num)
+{
+	while (true)
+	{
+	}
+}
+
+bool parseClasses(token_stack * tns, token_stack * tokenout, int & vector_index)
+{
+	token_stack&tokens = *tns;
+	token* t = (tokens)[vector_index];
+	token* Class = t;
+
+	if (t->name == "CLASS")
+	{
+		vector_index++;
+		t = tokens[vector_index];
+		while (t->name != "BODY" && vector_index < tokens.size())
+		{
+			Class->tokens.push_back(t);
+			t = tokens[vector_index++];
+		}
+
+		if (vector_index < tokens.size())
+		{
+			Class->tokens.push_back(t);
+			tokenout->push_back(Class);
+		}
+		else return false;
+		return true;
+	}
+	else tokenout->push_back(t);
+
+	return false;
+}
+
 bool parseStatements(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack>& referenceMap)
 {
 	token_stack&tokens = *tns;
@@ -27,22 +68,74 @@ bool parseStatements(token_stack * tns, token_stack * tokenout, int & vector_ind
 		statement->value = "STATEMENT";
 
 		statement->vector = i.second[0]->vector;
+		
 		if (i.second[0]->name == "IDENTIFIER" && i.second[0]->value == "if")
 		{
-			Token(statement2);
-			
-			statement2->name = "STATEMENT";
-			statement2->value = "STATEMENT";
+				Token(statement2);
 
-			statement2->vector = i.second[1]->vector;
+				statement2->name = "STATEMENT";
+				statement2->value = "STATEMENT";
 
-			for (int j = 1; j < i.second.size(); j++)
-				statement2->tokens.push_back(i.second[j]);
+				statement2->vector = i.second[1]->vector;
 
-			tokenout->push_back(i.second[0]);
-			tokenout->push_back(statement2);
+				for (int j = 1; j < i.second.size(); j++)
+					statement2->tokens.push_back(i.second[j]);
 
-			delete statement;
+				tokenout->push_back(i.second[0]);
+				tokenout->push_back(statement2);
+
+				delete statement;
+		}
+		else if (i.second[0]->name == "IDENTIFIER" && i.second[0]->value == "class")
+		{
+			if (i.second.size() > 2)
+			{
+				Token(statement2);
+
+				statement2->name = "STATEMENT";
+				statement2->value = "STATEMENT";
+
+				statement2->vector = i.second[1]->vector;
+
+				if (i.second[1]->name != "IDENTIFIER")
+				{
+					std::cerr << "class must have an IDENTIFIER type name " << vectorinfo(i.second[0]->vector) << std::endl;
+					std::cerr << "current type: " << i.second[1]->name << std::endl;
+					exit_(0);
+				}
+
+				for (int j = 2; j < i.second.size(); j++)
+					statement2->tokens.push_back(i.second[j]);
+
+				i.second[0]->name = "CLASS";
+				i.second[0]->value = i.second[1]->value;
+				
+				tokenout->push_back(i.second[0]);
+				tokenout->push_back(statement2);
+
+				delete statement;
+			}
+			else
+			{
+				if (i.second.size() < 2)
+				{
+					std::cerr << "class must have a name" << vectorinfo(i.second[0]->vector) << std::endl;
+					exit_(0);
+				}
+					
+				if (i.second[1]->name != "IDENTIFIER")
+				{
+					std::cerr << "class must have an IDENTIFIER type name " << vectorinfo(i.second[0]->vector) << std::endl;
+					std::cerr << "current type: " << i.second[1]->name << std::endl;
+					exit_(0);
+				}
+
+				i.second[0]->name = "CLASS";
+				i.second[0]->value = i.second[1]->value;
+				tokenout->push_back(i.second[0]);
+
+				delete statement;
+			}
 		}
 		else
 		{
@@ -204,22 +297,32 @@ token_stack Parser::parse(token_stack & tokens)
 	for (token* t : tokenout)
 		lmap[t->vector.line].push_back(t);
 
-for (auto const i : lmap) sorter.push_back(i.first);
+	for (auto const i : lmap) sorter.push_back(i.first);
 
-std::sort(sorter.begin(), sorter.end());
+	std::sort(sorter.begin(), sorter.end());
 
-tokenout.clear();
+	tokenout.clear();
 
-for (unsigned int i : sorter)
-for (token* t : lmap[i])
-tokenout.push_back(t);
-tokens = token_stack(tokenout);
-tokenout.clear();
+	for (unsigned int i : sorter)
+	for (token* t : lmap[i])
+	tokenout.push_back(t);
+	tokens = token_stack(tokenout);
+	tokenout.clear();
 
-vector_index = 0;
+	vector_index = 0;
 
-call(tokens, tokenout, vector_index, parse_8); //check assertions
-call(tokens, tokenout, vector_index, parseIf); //check ifs
+	call(tokens, tokenout, vector_index, parse_8); //check assertions
+	call(tokens, tokenout, vector_index, parseIf); //check ifs
+
+	while (vector_index < tokens.size())
+	{
+		parseClasses(&tokens, &tokenout, vector_index);
+		vector_index++;
+	}
+
+	vector_index = 0;
+	tokens = token_stack(tokenout);
+	tokenout.clear();
 
 #undef remaining
 
@@ -621,7 +724,7 @@ std::vector<token*> MochaLexer::lex(std::string program, std::map<std::string, s
 
 	program = program + " ";
 
-	int line = 0;
+	int line = 1;
 	int offset = 0;
 	int spaces = 0;
 	bool countspaces = true;
