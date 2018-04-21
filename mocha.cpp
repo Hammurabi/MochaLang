@@ -27,10 +27,29 @@ bool parseStatements(token_stack * tns, token_stack * tokenout, int & vector_ind
 		statement->value = "STATEMENT";
 
 		statement->vector = i.second[0]->vector;
+		if (i.second[0]->name == "IDENTIFIER" && i.second[0]->value == "if")
+		{
+			Token(statement2);
+			
+			statement2->name = "STATEMENT";
+			statement2->value = "STATEMENT";
 
-		for (token * t : i.second) statement->tokens.push_back(t);
+			statement2->vector = i.second[1]->vector;
 
-		tokenout->push_back(statement);
+			for (int j = 1; j < i.second.size(); j++)
+				statement2->tokens.push_back(i.second[j]);
+
+			tokenout->push_back(i.second[0]);
+			tokenout->push_back(statement2);
+
+			delete statement;
+		}
+		else
+		{
+			for (token * t : i.second) statement->tokens.push_back(t);
+
+			tokenout->push_back(statement);
+		}
 	}
 
 	return true;
@@ -43,7 +62,7 @@ bool parseIf(token_stack * tns, token_stack * tokenout, int & vector_index)
 	token* t = (tokens)[vector_index];
 
 	using namespace std;
-	if ((t->name == "IDENTIFIER") && (t->value == "if"))
+	if (t-(t->name == "IDENTIFIER") && (t->value == "if"))
 	{
 		vector_index++;
 
@@ -73,6 +92,7 @@ bool parseIf(token_stack * tns, token_stack * tokenout, int & vector_index)
 			else
 				n->tokens.push_back(t);
 
+			if(keep)
 			vector_index++;
 		}
 
@@ -149,8 +169,8 @@ void call(token_stack&tokens, token_stack&tokenout, int& vector_index, bool(*mt)
 
 		call((t->tokens), out, i, mt);
 
-		std::cout << out.size() << std::endl;
-		std::cout << t->tokens.size() << std::endl;
+		//std::cout << out.size() << std::endl;
+		//std::cout << t->tokens.size() << std::endl;
 
 		//t->tokens = token_stack(out);
 	}
@@ -206,7 +226,7 @@ tokenout.clear();
 vector_index = 0;
 
 call(tokens, tokenout, vector_index, parse_8); //check assertions
-//call(tokens, tokenout, vector_index, parseIf); //check ifs
+call(tokens, tokenout, vector_index, parseIf); //check ifs
 
 #undef remaining
 
