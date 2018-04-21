@@ -276,6 +276,8 @@ void parse_(token_stack & tokens, token_stack& out)
 	std::cout << "---------------------------------------------------\n";
 }
 
+#include <algorithm>
+
 token_stack Parser::parse(token_stack & tokens)
 {
 	token_stack tokenout;
@@ -292,6 +294,22 @@ token_stack Parser::parse(token_stack & tokens)
 		vector_index++;
 	}
 
+	std::map<unsigned int, token_stack> lmap;
+
+	std::vector<unsigned int> sorter;
+
+	for (token* t : tokenout)
+		lmap[t->vector.line].push_back(t);
+
+	for (auto const i : lmap) sorter.push_back(i.first);
+
+	std::sort(sorter.begin(), sorter.end());
+
+	tokenout.clear();
+
+	for (unsigned int i : sorter)
+		for (token* t : lmap[i])
+			tokenout.push_back(t);
 	tokens = token_stack(tokenout);
 	tokenout.clear();
 
@@ -370,8 +388,16 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 				for(auto i : sortedList)
 					if (i <= current)
 					{
-						referenceMap[i]->push_back(n);
-						referenceMap[i]->push_back(t);
+						if (n->vector.line > t->vector.line)
+						{
+							referenceMap[i]->push_back(t);
+							tokenout->push_back(n);
+						}
+						else
+						{
+							tokenout->push_back(n);
+							referenceMap[i]->push_back(t);
+						}
 					}
 
 				keep = false;
