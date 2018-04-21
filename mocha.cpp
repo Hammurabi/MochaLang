@@ -86,8 +86,6 @@ bool parseIf(token_stack * tns, token_stack * tokenout, int & vector_index)
 			{
 				keep = false;
 				n->tokens.push_back(t);
-
-				t->debug(12);
 			}
 			else
 				n->tokens.push_back(t);
@@ -168,11 +166,6 @@ void call(token_stack&tokens, token_stack&tokenout, int& vector_index, bool(*mt)
 		int i = 0;
 
 		call((t->tokens), out, i, mt);
-
-		//std::cout << out.size() << std::endl;
-		//std::cout << t->tokens.size() << std::endl;
-
-		//t->tokens = token_stack(out);
 	}
 
 	vector_index = 0;
@@ -239,11 +232,6 @@ std::cout << "---------------------------------------------------\n";
 
 return tokens;
 }
-
-//std::map<std::string, std::string>				MochaOpcodeProvider::specials;
-//std::vector<std::string>							MochaOpcodeProvider::keywords;
-//std::map<std::string, std::string>				MochaOpcodeProvider::types;
-//std::map<std::string, int>						MochaOpcodeProvider::precedence;
 
 bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap)
 {
@@ -335,13 +323,11 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 					{
 						if (n->vector.line > t->vector.line)
 						{
-							//referenceMap[i]->push_back(t);
 							tokenout->push_back(n);
 						}
 						else
 						{
 							tokenout->push_back(n);
-							//referenceMap[i]->push_back(t);
 						}
 					}
 
@@ -360,55 +346,6 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 
 		return false;
 	}
-
-	
-	
-	//if (last->vector.numspaces < t->vector.numspaces)
-	//{
-	//	tokenout->push_back(t);
-	//	vector_index++;
-
-	//	int numspaces = t->vector.numspaces;
-	//	Token(n);
-	//	n->name = "BODY";
-	//	n->precedence = 0;
-	//	n->value = "BODY";
-	//	n->vector = t->vector;
-
-	//	n->tokens.push_back(t);
-
-	//	bool finished = false;
-
-	//	while ((!finished) && (vector_index < tokens.size()))
-	//	{
-	//		t = (tokens)[vector_index];
-	//		next = (tokens)[previewN];
-
-	//		if (next->vector.numspaces < numspaces)
-	//		{
-	//			t->print();
-	//			next->print();
-	//			cout << "-----------------\n";
-	//			finished = true;
-	//		}
-	//		
-	//		vector_index++;
-	//		if(t->vector.numspaces > numspaces) parseBody(tns, &(n->tokens), vector_index);
-	//		else
-	//			n->tokens.push_back(t);
-	//		//std::cout << vector_index << " " << tns->size() << std::endl;
-	//	}
-
-	//	tokenout->push_back(t);
-	//	tokenout->push_back(n);
-
-	//	//*t = *empty;
-	//	//*next = *empty;
-	//	//*last = *empty;
-	//	return true;
-	//}
-	//else
-	//	return false;
 }
 
 bool Parser::parseAssertion(token_stack * tns, token_stack * tokenout, int & vector_index)
@@ -522,34 +459,8 @@ std::string MochaLexer::typeof(std::string & str)
 
 std::string MochaLexer::chartypeof(std::string & c)
 {
-	//if (c == '(') return "OPEN_PARENTHESIS";
-	//else if (c == ')') return "CLOSED_PARENTHESIS";
-	//else if (c == '[') return "OPEN_BRACKET";
-	//else if (c == ']') return "CLOSED_BRACKET";
-	//else if (c == '*') return "MULTIPLICATION";
-	//else if (c == '&') return "AND";
-	//else if (c == '^') return "XOR";
-	//else if (c == '$') return "DOLLARSIGN";
-	//else if (c == '/') return "DIVISION";
-	//else if (c == '.') return "DOT";
-	//else if (c == ':') return "COLON";
-	//else if (c == ';') return "SEMI_COLON";
-	//else if (c == '+') return "ADDITION";
-	//else if (c == '-') return "SUBTRACTION";
-	//else if (c == '=') return "ASSIGN";
-	//else if (c == '@') return "AT";
-	//else if (c == '!') return "NOT";
-	//else if (c == '~') return "ACCENT";
-	//else if (c == '#') return "HASH";
-	//else if (c == ',') return "COMMA";
-	//else if (c == '?') return "QUESTION_MARK";
-	//else if (c == '}') return "OPEN_CURLY";
-	//else if (c == '{') return "CLOSE_CURLY";
-	//else if (c == '|') return "OR";
-
 	for (auto const& key : types)
 		if (key.first == c) return key.second;
-	//std::cout << key.first << " " << c << std::endl;
 
 	return "";
 }
@@ -681,19 +592,7 @@ void MochaLexer::loop(std::vector<token*>& tokens, std::string & program, std::s
 			builder = program.at(i);// +"");
 			isIdentifier = true;
 		}
-		//else if (!isNumber && ( (!isalpha(C) && isalnum(C)) || C == '_'))
-		//{
-		//	builder.append(C + "");
-		//	isNumber = true;
-		//}
-		//else if ((!isalpha(C) && isalnum(C)) && isNumber)
-		//{
-		//	builder.append(C + "");
-		//}
-		//else if (!(!isalpha(C) && isalnum(C)) && isNumber)
-		//{
 
-		//}
 		if (C != ' ' && C != '\n' && C != '\t' && !isIdentifier)
 		{
 			std::string check;
@@ -722,10 +621,6 @@ std::vector<token*> MochaLexer::lex(std::string program, std::map<std::string, s
 
 	program = program + " ";
 
-	//#define N (hasNext(program, i) ? getNext(program, i) : '\0')
-	//#define L (hasNext(program, i) ? (getNext(program, i) + "") : "")
-	//#define C program.at(i)
-
 	int line = 0;
 	int offset = 0;
 	int spaces = 0;
@@ -735,9 +630,6 @@ std::vector<token*> MochaLexer::lex(std::string program, std::map<std::string, s
 
 	for (int i = 0; i < program.size(); i++)
 		loop(tokens, program, builder, i, offset, spaces, line, countspaces, isIdentifier);
-	//#undef N
-	//#undef L
-	//#undef C
 
 	return tokens;
 }
