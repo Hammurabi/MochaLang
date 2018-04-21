@@ -482,7 +482,7 @@ namespace MochaOpcodeProvider
 		return string.at(index + 1);
 	}
 
-	bool isSpecial(const std::string str, std::vector<token>& tokens, const int line, const int offset, const int spaces)
+	bool isSpecial(const std::string str, std::vector<token*>& tokens, const int line, const int offset, const int spaces)
 	{
 		if (specials.find(str) != specials.end())
 		{
@@ -492,7 +492,7 @@ namespace MochaOpcodeProvider
 			t.vector.line = line;
 			t.vector.numspaces = spaces;
 			t.vector.offset = offset;
-			tokens.push_back(t);
+			tokens.push_back(new token(t));
 			return true;
 		}
 
@@ -561,7 +561,7 @@ namespace MochaOpcodeProvider
 		return 0;
 	}
 
-	void loop(std::vector<token>& tokens, std::string& program, std::string& builder, int& i, int& offset, int& spaces, int& line, bool& countspaces, bool& isIdentifier)
+	void loop(std::vector<token*>& tokens, std::string& program, std::string& builder, int& i, int& offset, int& spaces, int& line, bool& countspaces, bool& isIdentifier)
 	{
 		using namespace std;
 
@@ -582,7 +582,7 @@ namespace MochaOpcodeProvider
 				t.vector.numspaces = spaces;
 				t.vector.offset = offset;
 
-				tokens.push_back(t);
+				tokens.push_back(new token(t));
 
 				builder = "";
 			}
@@ -609,7 +609,7 @@ namespace MochaOpcodeProvider
 				t.vector.numspaces = spaces;
 				t.vector.offset = offset;
 
-				tokens.push_back(t);
+				tokens.push_back(new token(t));
 
 				builder = "";
 			}
@@ -628,7 +628,7 @@ namespace MochaOpcodeProvider
 			t.vector.numspaces = spaces;
 			t.vector.offset = offset;
 
-			tokens.push_back(t);
+			tokens.push_back(new token(t));
 
 			builder = "";
 		}
@@ -671,7 +671,7 @@ namespace MochaOpcodeProvider
 				t.vector.numspaces = spaces;
 				t.vector.offset = offset;
 
-				tokens.push_back(t);
+				tokens.push_back(new token(t));
 
 				builder = "";
 			}
@@ -705,7 +705,7 @@ namespace MochaOpcodeProvider
 				t.vector.numspaces = spaces;
 				t.vector.offset = offset;
 				t.precedence = getprecedence(check);
-				tokens.push_back(t);
+				tokens.push_back(new token(t));
 			}
 			else {
 			}
@@ -714,9 +714,9 @@ namespace MochaOpcodeProvider
 		}
 	}
 
-	std::vector<token> lex(std::string program, std::map<std::string, std::string> lexmap)
+	std::vector<token*> lex(std::string program, std::map<std::string, std::string> lexmap)
 	{
-		std::vector<token> tokens;
+		std::vector<token*> tokens;
 		std::string        builder = "";
 
 		program = program + " ";
@@ -791,80 +791,30 @@ namespace MochaOpcodeProvider
 		return false;
 	}
 
+	void parse(token_stack* tokens, token_stack* tokenout, int& vector_index)
+	{
+		parseBODY(tokens, tokenout, vector_index);
+	}
+
 	void parse(token_stack& tokens)
 	{
 		token_stack tokenout;
 
-		//I HATE THIS STREAM CLASSSSSSSS
-		//TokenStream stream(tokens);
-
-		//while (stream.remaining() > 0)
-		//{
-		//	token& t = stream.next();
-
-		//	//token& t = tokens[tokens.size() - 1];
-
-		//	for (int i = 0; i < grammar.size(); i++)
-		//	{
-		//		GRAMMAR_RULE& rule = grammar[i];
-		//		if (rule.checkMatch(t, stream))
-		//		{
-		//			std::cout << "matched: " << rule.name << std::endl;
-		//			break;
-		//		}
-		//	}
-		//}
-
-		//std::reverse(tokens.begin(), tokens.end());
-
 		int vector_index = 0;
-
 
 		while (remaining > 0)
 		{
 			using namespace std;
-			token t = tokens[vector_index];
-			token next = tokens[previewN];
-			token last = tokens[previewP];
+			token* t = tokens[vector_index];
+			token* next = tokens[previewN];
+			token* last = tokens[previewP];
 
-			token n = t;
+			token* n = t;
 
-			parseBODY(&tokens, &tokenout, vector_index);
+			parse(&tokens, &tokenout, vector_index);
 
 			tokenout.push_back(n);
 			vector_index++;
-				/*for (int i = 0; i < grammar.size(); i++)
-				{
-					GRAMMAR_RULE& rule = grammar[i];
-					if(tokens.size() >= rule.rules.size())
-					{
-						int size = 0;
-
-						for (int j = 0; j < rule.rules.size(); j ++)
-						{
-							if (rule.rules[j] == "[WHITESPACE(>)]")
-							{
-								if (last.vector.numspaces < t.vector.numspaces)
-								{
-								}
-								else
-								{
-									size++;
-								}
-							}
-
-							if (size == 0)
-							{
-								std::cout << "lol\n";
-							}
-						}
-
-						std::cout << "matched: " << rule.name << " " << t.name << std::endl;
-						break;
-					}
-					else if (i == grammar.size() - 1)
-						tokenout.push_back(t);
-				}*/
 		}
 
 #undef remaining
@@ -872,7 +822,7 @@ namespace MochaOpcodeProvider
 		std::cout << "---------------------------------------------------\n";
 
 		for (int i = 0; i < tokenout.size(); i++)
-			tokenout[i].print();
+			tokenout[i]->print();
 	}
 
 #undef token_stack
