@@ -57,3 +57,7 @@ Debug/vc140.idb
 Debug/vc140.pdb
 *.idb
 Debug/vc140.pdb
+*.idb
+Debug/MochaLang.tlog/CL.command.1.tlog
+.vscode/tasks.json
+lang/stdlib.mc.txt

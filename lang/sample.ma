@@ -21,7 +21,12 @@
 //       print i
 
     if a == b
+      print false
       print true
+      if a == b
+        print false
+        print true
+
 //
 // int dosomething(int x, int y)
 //   return x + y

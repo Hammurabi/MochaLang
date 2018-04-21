@@ -27,9 +27,27 @@ struct token {
 
 	filevector  vector;
 
-	void print()
+	void print(std::string pre = "")
 	{
-		std::cout << "TOKEN: " << name << " " << value << " l:" << vector.line << " o:" << vector.offset << " s" << vector.numspaces << std::endl;
+		std::cout << pre.c_str() << "TOKEN(" << tokens.size() << "): " << name << " " << value << " vector{line: " << vector.line << " offset: " << vector.offset << " spaces: " << vector.numspaces << "}" << std::endl;
+	}
+
+	std::string spacing(int i)
+	{
+		std::string string = "";
+
+		for (int s = 0; s < i; s++)
+			string.append("\t");
+
+		return string;
+	}
+
+	void debug(int spcing = 0)
+	{
+		print(spacing(spcing));
+
+		for (int i = 0; i < tokens.size(); i ++)
+			tokens[i]->debug(spcing + 1);
 	}
 
 	~token()
@@ -742,88 +760,25 @@ namespace MochaOpcodeProvider
 	}
 
 #define token_stack std::vector<token*>
-#define remaining (tokens.size() - vector_index)
+#define remaining_ (tokens.size() - vector_index)
 #define previewP   (vector_index > 0 ? vector_index - 1 : 0)
 #define previewN   (vector_index < (tokens.size() - 1) ? vector_index + 1 : tokens.size() - 1)
-#define Token(x) token* x = new token();
+#define Token(x) token* x = new token()
 	Token(empty);
 
-	bool parseBODY(token_stack*tns, token_stack*tokenout, int&vector_index)
+	class Parser
 	{
-		token_stack&tokens = *tns;
+	public:
+		bool parseBody(token_stack*tns, token_stack*tokenout, int&vector_index);
+		bool parseParenthesis(token_stack*tns, token_stack*tokenout, int&vector_index);
+		bool parseBraces(token_stack*tns, token_stack*tokenout, int&vector_index);
+		bool parseClass(token_stack*tns, token_stack*tokenout, int&vector_index);
+		bool parseMathOperator(token_stack*tns, token_stack*tokenout, int&vector_index);
+		bool parseBoolOperator(token_stack*tns, token_stack*tokenout, int&vector_index);
 
-		token* t = (tokens)[vector_index];
-		token* next = (tokens)[previewN];
-		token* last = (tokens)[previewP];
-
-		using namespace std;
-		if (last->vector.numspaces < t->vector.numspaces)
-		{
-			int numspaces = t->vector.numspaces;
-			Token(n);
-			n->name = "BODY";
-			n->precedence = 0;
-			n->value = "BODY";
-			n->vector = t->vector;
-
-			bool finished = false;
-			
-			while (!finished && vector_index < tokens.size())
-			{
-				token* tok = (tokens)[vector_index];
-				token* nextt = (tokens)[previewN];
-				token* lastt = (tokens)[previewP];
-
-				if (false) {}// parseBODY(tns, &n.tokens, vector_index)) {}
-				else n->tokens.push_back(t);
-				vector_index++;
-				if (tok->vector.numspaces < numspaces) finished = true;
-			}
-
-			tokenout->push_back(n);
-
-			t = empty;
-			next = empty;
-			last = empty;
-			return true;
-		}
-
-		return false;
-	}
-
-	void parse(token_stack* tokens, token_stack* tokenout, int& vector_index)
-	{
-		parseBODY(tokens, tokenout, vector_index);
-	}
-
-	void parse(token_stack& tokens)
-	{
-		token_stack tokenout;
-
-		int vector_index = 0;
-
-		while (remaining > 0)
-		{
-			using namespace std;
-			token* t = tokens[vector_index];
-			token* next = tokens[previewN];
-			token* last = tokens[previewP];
-
-			token* n = t;
-
-			parse(&tokens, &tokenout, vector_index);
-
-			tokenout.push_back(n);
-			vector_index++;
-		}
-
-#undef remaining
-
-		std::cout << "---------------------------------------------------\n";
-
-		for (int i = 0; i < tokenout.size(); i++)
-			tokenout[i]->print();
-	}
+		bool parse(token_stack* tokns, token_stack* tokenout, int& vector_index);
+		token_stack parse(token_stack& tokens);
+	};
 
 #undef token_stack
 
