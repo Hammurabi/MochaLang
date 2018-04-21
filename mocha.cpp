@@ -132,30 +132,28 @@ void call(token_stack&tokens, token_stack&tokenout, int& vector_index, bool(*mt)
 	{
 		using namespace std;
 		token* t = tokens[vector_index];
-		token* next = tokens[previewN];
-		token* last = tokens[previewP];
 
 		mt(&tokens, &tokenout, vector_index);
 
 		vector_index++;
 	}
 
-	for (auto t : tokens)
+
+	tokens = token_stack(tokenout);
+	tokenout.clear();
+
+	for (auto& t : tokens)
 	{
 		token_stack out;
 		int i = 0;
 
-		while (i < t->tokens.size())
-		{
-			mt(&(t->tokens), &out, i);
-			i++;
-		}
+		call((t->tokens), out, i, mt);
 
-		t->tokens = token_stack(out);
+		std::cout << out.size() << std::endl;
+		std::cout << t->tokens.size() << std::endl;
+
+		//t->tokens = token_stack(out);
 	}
-
-	tokens = token_stack(tokenout);
-	tokenout.clear();
 
 	vector_index = 0;
 }
@@ -173,6 +171,9 @@ token_stack Parser::parse(token_stack & tokens)
 	refMap[0] = &tokenout;
 
 	parseStatements(&tokens, &tokenout, vector_index, lynMap);
+
+	tokens = token_stack(tokenout);
+	tokenout.clear();
 
 	vector_index = 0;
 
@@ -195,16 +196,16 @@ for (auto const i : lmap) sorter.push_back(i.first);
 std::sort(sorter.begin(), sorter.end());
 
 tokenout.clear();
-//
-//for (unsigned int i : sorter)
-//for (token* t : lmap[i])
-//tokenout.push_back(t);
-//tokens = token_stack(tokenout);
-//tokenout.clear();
-//
-//vector_index = 0;
-//
-//call(tokens, tokenout, vector_index, parse_8); //check assertions
+
+for (unsigned int i : sorter)
+for (token* t : lmap[i])
+tokenout.push_back(t);
+tokens = token_stack(tokenout);
+tokenout.clear();
+
+vector_index = 0;
+
+call(tokens, tokenout, vector_index, parse_8); //check assertions
 //call(tokens, tokenout, vector_index, parseIf); //check ifs
 
 #undef remaining
