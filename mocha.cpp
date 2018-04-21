@@ -47,40 +47,10 @@ bool parseIf(token_stack * tns, token_stack * tokenout, int & vector_index)
 
 		tokenout->push_back(n);
 
-		//*t = *empty;
-		//*next = *empty;
-		//*last = *empty;
 		return true;
 	}
 	else
 		return false;
-
-	//token_stack&tokens = *tns;
-
-	//token* t = (tokens)[vector_index];
-	//token* next = (tokens)[previewN];
-	//token* last = (tokens)[previewP];
-
-	//using namespace std;
-	//if ((t->name == "IDENTIFIER") && (t->value == "if") && tns->size() >= vector_index + 2)
-	//{
-	//	int numspaces = t->vector.numspaces;
-	//	Token(n);
-	//	n->name = "IF_STATEMENT";
-	//	n->precedence = 0;
-	//	n->value = "IF_STATEMENT";
-	//	n->vector = t->vector;
-
-	//	vector_index++;
-	//	
-	//	n->tokens.push_back(tokens[vector_index++]);
-	//	n->tokens.push_back(tokens[vector_index++]);
-
-	//	tokenout->push_back(n);
-	//	return true;
-	//}
-	//else
-	//	return false;
 }
 
 bool parseBody_(token_stack*tns, token_stack*tokenout, int& vector_index)
@@ -315,8 +285,8 @@ token_stack Parser::parse(token_stack & tokens)
 
 	vector_index = 0;
 
-	//call(tokens, tokenout, vector_index, parse_8); //check assertions
-	//call(tokens, tokenout, vector_index, parse_ifs); //check ifs
+	call(tokens, tokenout, vector_index, parse_8); //check assertions
+	call(tokens, tokenout, vector_index, parse_ifs); //check ifs
 
 	
 
