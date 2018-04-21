@@ -53,54 +53,6 @@ bool parseIf(token_stack * tns, token_stack * tokenout, int & vector_index)
 		return false;
 }
 
-bool parseBody_(token_stack*tns, token_stack*tokenout, int& vector_index)
-{
-	token_stack&tokens = *tns;
-
-	token* t = (tokens)[vector_index];
-	token* next = (tokens)[previewN];
-	token* last = (tokens)[previewP];
-
-	using namespace std;
-	if (last->vector.numspaces < t->vector.numspaces)
-	{
-		vector_index++;
-
-		int numspaces = t->vector.numspaces;
-		Token(n);
-		n->name = "BODY";
-		n->precedence = 0;
-		n->value = "BODY";
-		n->vector = t->vector;
-
-		n->tokens.push_back(t);
-
-		bool finished = false;
-
-		while ((!finished) && (vector_index < tokens.size()))
-		{
-			token* t = (tokens)[vector_index];
-			token* next = (tokens)[previewN];
-			token* last = (tokens)[previewP];
-
-			if (next->vector.numspaces < numspaces)
-				finished = true;
-
-			vector_index++;
-			parseBody_(tns, tokenout, vector_index);
-		}
-
-		tokenout->push_back(n);
-
-		//*t = *empty;
-		//*next = *empty;
-		//*last = *empty;
-		return true;
-	}
-	else
-		return false;
-}
-
 bool parseAssertion(token_stack * tns, token_stack * tokenout, int & vector_index)
 {
 	token_stack&tokens = *tns;
@@ -204,46 +156,6 @@ void call(token_stack&tokens, token_stack&tokenout, int& vector_index, bool(*mt)
 	tokenout.clear();
 
 	vector_index = 0;
-}
-
-void parse_(token_stack & tokens, token_stack& out)
-{
-	token_stack tokenout;
-
-	int vector_index = 0;
-
-	call(tokens, tokenout, vector_index, parseBody_);
-
-	//while (vector_index < tokens.size())
-	//{
-	//	using namespace std;
-	//	token* t = tokens[vector_index];
-	//	token* next = tokens[previewN];
-	//	token* last = tokens[previewP];
-
-	//	parse(&tokens, &tokenout, vector_index);
-
-	//	vector_index++;
-	//}
-
-	//tokens = token_stack(tokenout);
-	//tokenout.clear();
-
-	//vector_index = 0;
-
-	//call(tokens, tokenout, vector_index, parse_8); //check assertions
-	//call(tokens, tokenout, vector_index, parse_ifs); //check ifs
-
-
-
-#undef remaining
-
-	std::cout << "---------------------------------------------------\n";
-
-	for (int i = 0; i < tokens.size(); i++)
-		tokens[i]->debug();
-
-	std::cout << "---------------------------------------------------\n";
 }
 
 #include <algorithm>
