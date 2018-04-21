@@ -83,6 +83,54 @@ bool parseIf(token_stack * tns, token_stack * tokenout, int & vector_index)
 	//	return false;
 }
 
+bool parseBody_(token_stack*tns, token_stack*tokenout, int& vector_index)
+{
+	token_stack&tokens = *tns;
+
+	token* t = (tokens)[vector_index];
+	token* next = (tokens)[previewN];
+	token* last = (tokens)[previewP];
+
+	using namespace std;
+	if (last->vector.numspaces < t->vector.numspaces)
+	{
+		vector_index++;
+
+		int numspaces = t->vector.numspaces;
+		Token(n);
+		n->name = "BODY";
+		n->precedence = 0;
+		n->value = "BODY";
+		n->vector = t->vector;
+
+		n->tokens.push_back(t);
+
+		bool finished = false;
+
+		while ((!finished) && (vector_index < tokens.size()))
+		{
+			token* t = (tokens)[vector_index];
+			token* next = (tokens)[previewN];
+			token* last = (tokens)[previewP];
+
+			if (next->vector.numspaces < numspaces)
+				finished = true;
+
+			vector_index++;
+			parseBody_(tns, tokenout, vector_index);
+		}
+
+		tokenout->push_back(n);
+
+		//*t = *empty;
+		//*next = *empty;
+		//*last = *empty;
+		return true;
+	}
+	else
+		return false;
+}
+
 bool parseAssertion(token_stack * tns, token_stack * tokenout, int & vector_index)
 {
 	token_stack&tokens = *tns;
@@ -145,9 +193,9 @@ bool Parser::parse(token_stack * tokns, token_stack * tokenout, int & vector_ind
 		if (parseBody(tokns, tokenout, vector_index)) {}
 		//else if (parseIf(tokns, tokenout, vector_index)) {} //8
 	else {
-		token_stack tokens = *tokns;
+		//token_stack tokens = *tokns;
 
-		token* t = (tokens)[vector_index];
+		token* t = (*tokns)[vector_index];
 		tokenout->push_back(t);
 	}
 
@@ -188,12 +236,53 @@ void call(token_stack&tokens, token_stack&tokenout, int& vector_index, bool(*mt)
 	vector_index = 0;
 }
 
+void parse_(token_stack & tokens, token_stack& out)
+{
+	token_stack tokenout;
+
+	int vector_index = 0;
+
+	call(tokens, tokenout, vector_index, parseBody_);
+
+	//while (vector_index < tokens.size())
+	//{
+	//	using namespace std;
+	//	token* t = tokens[vector_index];
+	//	token* next = tokens[previewN];
+	//	token* last = tokens[previewP];
+
+	//	parse(&tokens, &tokenout, vector_index);
+
+	//	vector_index++;
+	//}
+
+	//tokens = token_stack(tokenout);
+	//tokenout.clear();
+
+	//vector_index = 0;
+
+	//call(tokens, tokenout, vector_index, parse_8); //check assertions
+	//call(tokens, tokenout, vector_index, parse_ifs); //check ifs
+
+
+
+#undef remaining
+
+	std::cout << "---------------------------------------------------\n";
+
+	for (int i = 0; i < tokens.size(); i++)
+		tokens[i]->debug();
+
+	std::cout << "---------------------------------------------------\n";
+}
+
 token_stack Parser::parse(token_stack & tokens)
 {
 	token_stack tokenout;
 
 	int vector_index = 0;
 
+	//THIS IS RECURSIVE
 	while (vector_index < tokens.size())
 	{
 		using namespace std;
@@ -257,19 +346,19 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 
 		bool finished = false;
 
-		while ((!finished) && (vector_index < tokens.size()))
+		while ((!finished) && (vector_index < tokens.size()) && t->vector.numspaces < numspaces)
 		{
-			token* t = (tokens)[vector_index];
-			token* next = (tokens)[previewN];
-			token* last = (tokens)[previewP];
+			t = (tokens)[vector_index];
+			next = (tokens)[previewN];
+			vector_index++;
 
 			if (next->vector.numspaces < numspaces)
+			{
 				finished = true;
-			/*if (parseBODY(tns, &(n->tokens), vector_index)) {}
-			else n->tokens.push_back(t);*/
-			parse(tns, &(n->tokens), vector_index);
+			}
+
+			else parse(tns, &(n->tokens), vector_index);
 			//std::cout << vector_index << " " << tns->size() << std::endl;
-			vector_index++;
 		}
 
 		tokenout->push_back(n);
