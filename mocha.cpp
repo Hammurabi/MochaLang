@@ -188,16 +188,16 @@ bool parse_ifs(token_stack * tokns, token_stack * tokenout, int & vector_index)
 
 bool Parser::parse(token_stack * tokns, token_stack * tokenout, int & vector_index)
 {
-	//if (parseAssertion(tokns, tokenout, vector_index)) {} //8
-	//else 
-		if (parseBody(tokns, tokenout, vector_index)) {}
-		//else if (parseIf(tokns, tokenout, vector_index)) {} //8
-	else {
-		//token_stack tokens = *tokns;
+	////if (parseAssertion(tokns, tokenout, vector_index)) {} //8
+	////else 
+	//	if (parseBody(tokns, tokenout, vector_index)) {}
+	//	//else if (parseIf(tokns, tokenout, vector_index)) {} //8
+	//else {
+	//	//token_stack tokens = *tokns;
 
-		token* t = (*tokns)[vector_index];
-		tokenout->push_back(t);
-	}
+	//	token* t = (*tokns)[vector_index];
+	//	tokenout->push_back(t);
+	//}
 
 	return true;
 }
@@ -282,16 +282,13 @@ token_stack Parser::parse(token_stack & tokens)
 
 	int vector_index = 0;
 
+	std::map<unsigned int, token_stack*> refMap;
+	refMap[0] = &tokenout;
+
 	//THIS IS RECURSIVE
 	while (vector_index < tokens.size())
 	{
-		using namespace std;
-		token* t = tokens[vector_index];
-		token* next = tokens[previewN];
-		token* last = tokens[previewP];
-
-		parse(&tokens, &tokenout, vector_index);
-
+		parseBody(&tokens, &tokenout, vector_index, refMap);
 		vector_index++;
 	}
 
@@ -300,8 +297,8 @@ token_stack Parser::parse(token_stack & tokens)
 
 	vector_index = 0;
 
-	call(tokens, tokenout, vector_index, parse_8); //check assertions
-	call(tokens, tokenout, vector_index, parse_ifs); //check ifs
+	//call(tokens, tokenout, vector_index, parse_8); //check assertions
+	//call(tokens, tokenout, vector_index, parse_ifs); //check ifs
 
 	
 
@@ -322,18 +319,21 @@ token_stack Parser::parse(token_stack & tokens)
 //std::map<std::string, std::string>				MochaOpcodeProvider::types;
 //std::map<std::string, int>						MochaOpcodeProvider::precedence;
 
-bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_index)
+bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap)
 {
 	token_stack&tokens = *tns;
-
 	token* t = (tokens)[vector_index];
 	token* next = (tokens)[previewN];
-	token* last = (tokens)[previewP];
 
 	using namespace std;
-	if (last->vector.numspaces < t->vector.numspaces)
+	
+	if (t->vector.numspaces < next->vector.numspaces)
 	{
+		tokenout->push_back(t);
+
 		vector_index++;
+		token* t = (tokens)[vector_index];
+		token* next = (tokens)[previewN];
 
 		int numspaces = t->vector.numspaces;
 		Token(n);
@@ -343,33 +343,105 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 		n->vector = t->vector;
 
 		n->tokens.push_back(t);
+		referenceMap[numspaces] = &n->tokens;
 
-		bool finished = false;
+		bool keep = true;
 
-		while ((!finished) && (vector_index < tokens.size()) && t->vector.numspaces < numspaces)
+		vector_index++;
+
+		while ((vector_index < tokens.size()) && keep)
 		{
-			t = (tokens)[vector_index];
-			next = (tokens)[previewN];
-			vector_index++;
+			token* t = (tokens)[vector_index];
+			token* next = (tokens)[previewN];
 
-			if (next->vector.numspaces < numspaces)
+			if (t->vector.numspaces < next->vector.numspaces)
+				parseBody(tns, &(n->tokens), vector_index, referenceMap);
+			else if (t->vector.numspaces < numspaces)
 			{
-				finished = true;
-			}
+				int current = t->vector.numspaces;
 
-			else parse(tns, &(n->tokens), vector_index);
-			//std::cout << vector_index << " " << tns->size() << std::endl;
+				vector<unsigned int> sortedList;
+
+				for (auto& i : referenceMap)
+					sortedList.push_back(i.first);
+
+				std::reverse(sortedList.begin(), sortedList.end());
+
+				for(auto i : sortedList)
+					if (i <= current)
+					{
+						referenceMap[i]->push_back(n);
+						referenceMap[i]->push_back(t);
+					}
+
+				keep = false;
+			}
+			else
+				n->tokens.push_back(t);
+
+			if(keep)
+			vector_index++;
 		}
 
-		tokenout->push_back(n);
+		referenceMap.erase(numspaces);
 
-		//*t = *empty;
-		//*next = *empty;
-		//*last = *empty;
 		return true;
 	}
 	else
+	{
+		tokenout->push_back(t);
+
 		return false;
+	}
+
+	
+	
+	//if (last->vector.numspaces < t->vector.numspaces)
+	//{
+	//	tokenout->push_back(t);
+	//	vector_index++;
+
+	//	int numspaces = t->vector.numspaces;
+	//	Token(n);
+	//	n->name = "BODY";
+	//	n->precedence = 0;
+	//	n->value = "BODY";
+	//	n->vector = t->vector;
+
+	//	n->tokens.push_back(t);
+
+	//	bool finished = false;
+
+	//	while ((!finished) && (vector_index < tokens.size()))
+	//	{
+	//		t = (tokens)[vector_index];
+	//		next = (tokens)[previewN];
+
+	//		if (next->vector.numspaces < numspaces)
+	//		{
+	//			t->print();
+	//			next->print();
+	//			cout << "-----------------\n";
+	//			finished = true;
+	//		}
+	//		
+	//		vector_index++;
+	//		if(t->vector.numspaces > numspaces) parseBody(tns, &(n->tokens), vector_index);
+	//		else
+	//			n->tokens.push_back(t);
+	//		//std::cout << vector_index << " " << tns->size() << std::endl;
+	//	}
+
+	//	tokenout->push_back(t);
+	//	tokenout->push_back(n);
+
+	//	//*t = *empty;
+	//	//*next = *empty;
+	//	//*last = *empty;
+	//	return true;
+	//}
+	//else
+	//	return false;
 }
 
 bool Parser::parseAssertion(token_stack * tns, token_stack * tokenout, int & vector_index)

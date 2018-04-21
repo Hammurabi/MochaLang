@@ -302,7 +302,7 @@ struct token {
 class Parser
 {
 public:
-	bool parseBody(token_stack*tns, token_stack*tokenout, int&vector_index);
+	bool parseBody(token_stack*tns, token_stack*tokenout, int&vector_index, std::map<unsigned int, token_stack*>& referenceMap);
 	bool parseAssertion(token_stack*tns, token_stack*tokenout, int&vector_index);
 	//bool parseParenthesis(token_stack*tns, token_stack*tokenout, int&vector_index);
 	//bool parseBraces(token_stack*tns, token_stack*tokenout, int&vector_index);
