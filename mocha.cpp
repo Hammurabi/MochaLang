@@ -274,74 +274,29 @@ void call(token_stack&tokens, token_stack&tokenout, int& vector_index, bool(*mt)
 
 #include <algorithm>
 
-token_stack Parser::parse(token_stack & tokens)
+
+void finishParsingBody(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap)
 {
-	token_stack tokenout;
-
-	int vector_index = 0;
-
-	std::map<unsigned int, token_stack*> refMap;
-	std::map<unsigned int, token_stack>  lynMap;
-	refMap[0] = &tokenout;
-
-	parseStatements(&tokens, &tokenout, vector_index, lynMap);
-
-	tokens = token_stack(tokenout);
-	tokenout.clear();
-
-	vector_index = 0;
-
-	//THIS IS RECURSIVE
-	//while (vector_index < tokens.size())
-	//{
-		parseBody(&tokens, &tokenout, vector_index, refMap);
-	//	vector_index++;
-	//}
+	token_stack&tokens = *tns;
 
 	std::map<unsigned int, token_stack> lmap;
 
 	std::vector<unsigned int> sorter;
 
-	for (token* t : tokenout)
+	for (token* t : *tokenout)
 		lmap[t->vector.line].push_back(t);
 
 	for (auto const i : lmap) sorter.push_back(i.first);
 
 	std::sort(sorter.begin(), sorter.end());
 
-	tokenout.clear();
+	tokenout->clear();
 
 	for (unsigned int i : sorter)
-	for (token* t : lmap[i])
-	tokenout.push_back(t);
-	tokens = token_stack(tokenout);
-	tokenout.clear();
-
-	vector_index = 0;
-
-	call(tokens, tokenout, vector_index, parse_8); //check assertions
-	//call(tokens, tokenout, vector_index, parseIf); //check ifs
-
-	//while (vector_index < tokens.size())
-	//{
-	//	parseClasses(&tokens, &tokenout, vector_index);
-	//	vector_index++;
-	//}
-
-	//vector_index = 0;
-	//tokens = token_stack(tokenout);
-	//tokenout.clear();
-
-#undef remaining
-
-std::cout << "---------------------------------------------------\n";
-
-for (int i = 0; i < tokens.size(); i++)
-	tokens[i]->debug();
-
-std::cout << "---------------------------------------------------\n";
-
-return tokens;
+		for (token* t : lmap[i])
+			tokenout->push_back(t);
+	tokens = token_stack(*tokenout);
+	tokenout->clear();
 }
 
 bool parseBody2(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap)
@@ -410,8 +365,8 @@ bool parseBody2(token_stack * tns, token_stack * tokenout, int & vector_index, s
 			else
 				n->tokens.push_back(t);
 
-			if(keep)
-			vector_index++;
+			if (keep)
+				vector_index++;
 		}
 
 		if (keep)
@@ -455,6 +410,146 @@ bool parseBody2(token_stack * tns, token_stack * tokenout, int & vector_index, s
 
 		return false;
 	}
+}
+
+void doParseBody(token_stack& tokens, token_stack& tokenout, std::map<unsigned int, token_stack*> refMap, int& vector_index)
+{
+	while (vector_index < tokens.size())
+	{
+		parseBody2(&tokens, &tokenout, vector_index, refMap);
+		vector_index++;
+	}
+
+	vector_index = 0;
+
+	finishParsingBody(&tokens, &tokenout, vector_index, refMap);
+	
+	vector_index = 0;
+
+	while (vector_index < tokens.size())
+	{
+		token_stack out;
+		token* t = tokens[vector_index];
+		int i = 0;
+
+		doParseBody(t->tokens, out, refMap, i);
+
+		vector_index++;
+	}
+
+	vector_index = 0;
+}
+
+void fix(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap, token* parent)
+{
+	token_stack* tokens = tns;// parent ? &parent->tokens : tns;
+
+	int parent_max = parent ? parent->vector.numspaces : 0;
+	int lastmax = 0;
+	token* last = parent;
+
+	for (int i = 0; i < tns->size(); i++)
+	{
+		token* t = tns->at(i);
+		if(t->name == "BODY")
+			if (t->vector.numspaces < parent_max)
+				if (lastmax < t->vector.numspaces)
+				{
+					lastmax = t->vector.numspaces;
+					last = t;
+				}
+	}
+
+	int i = 0;
+
+	if(parent)
+	while (i < tns->size())
+	{
+		token* t = tns->at(i);
+
+		if (t->vector.numspaces < parent->vector.numspaces)
+			last->tokens.push_back(t);
+		else tokenout->push_back(t);
+
+		i++;
+	}
+	i = 0;
+
+	while (i < tokens->size())
+	{
+		token_stack out;
+		token* t = tokens->at(i);
+
+		if (t->name == "BODY")
+			fix(tns, &out, vector_index, referenceMap, t);
+		//else fix(&t->tokens, &out, vector_index, referenceMap, t);
+
+		t->tokens = out;
+		i++;
+	}
+
+	if (parent)
+		parent->tokens = token_stack(*tokenout);
+}
+
+token_stack Parser::parse(token_stack & tokens)
+{
+	token_stack tokenout;
+
+	int vector_index = 0;
+
+	std::map<unsigned int, token_stack*> refMap;
+	std::map<unsigned int, token_stack>  lynMap;
+	refMap[0] = &tokenout;
+
+	parseStatements(&tokens, &tokenout, vector_index, lynMap);
+
+	tokens = token_stack(tokenout);
+	tokenout.clear();
+
+	vector_index = 0;
+
+	//THIS IS RECURSIVE
+
+	//doParseBody(tokens, tokenout, refMap, vector_index);
+
+	while (vector_index < tokens.size())
+	{
+		parseBody2(&tokens, &tokenout, vector_index, refMap);
+		vector_index++;
+	}
+
+	vector_index = 0;
+
+	finishParsingBody(&tokens, &tokenout, vector_index, refMap);
+
+	vector_index = 0;
+
+	fix(&tokens, &tokenout, vector_index, refMap, 0);
+
+	call(tokens, tokenout, vector_index, parse_8); //check assertions
+	//call(tokens, tokenout, vector_index, parseIf); //check ifs
+
+	//while (vector_index < tokens.size())
+	//{
+	//	parseClasses(&tokens, &tokenout, vector_index);
+	//	vector_index++;
+	//}
+
+	//vector_index = 0;
+	//tokens = token_stack(tokenout);
+	//tokenout.clear();
+
+#undef remaining
+
+std::cout << "---------------------------------------------------\n";
+
+for (int i = 0; i < tokens.size(); i++)
+	tokens[i]->debug();
+
+std::cout << "---------------------------------------------------\n";
+
+return tokens;
 }
 
 bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap)
