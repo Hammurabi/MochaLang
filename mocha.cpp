@@ -15,25 +15,72 @@ bool parseIf(token_stack * tns, token_stack * tokenout, int & vector_index)
 	token* last = (tokens)[previewP];
 
 	using namespace std;
-	if ((t->name == "IDENTIFIER") && (t->value == "if") && tns->size() >= vector_index + 2)
+	if ((t->name == "IDENTIFIER") && (t->value == "if"))
 	{
-		int numspaces = t->vector.numspaces;
+		vector_index++;
+		t = (tokens)[vector_index++];
+
 		Token(n);
 		n->name = "IF_STATEMENT";
 		n->precedence = 0;
 		n->value = "IF_STATEMENT";
 		n->vector = t->vector;
 
-		vector_index++;
-		
-		n->tokens.push_back(tokens[vector_index++]);
-		n->tokens.push_back(tokens[vector_index++]);
+		n->tokens.push_back(t);
+
+		bool finished = false;
+
+		while ((!finished) && (vector_index < tokens.size()))
+		{
+			token* t = (tokens)[vector_index];
+
+			if (parseIf(tns, &(n->tokens), vector_index)) {}
+			else if (t->name == "BODY")
+			{
+				finished = true;
+
+				n->tokens.push_back(t);
+			}
+			else n->tokens.push_back(t);
+			vector_index++;
+		}
 
 		tokenout->push_back(n);
+
+		//*t = *empty;
+		//*next = *empty;
+		//*last = *empty;
 		return true;
 	}
 	else
 		return false;
+
+	//token_stack&tokens = *tns;
+
+	//token* t = (tokens)[vector_index];
+	//token* next = (tokens)[previewN];
+	//token* last = (tokens)[previewP];
+
+	//using namespace std;
+	//if ((t->name == "IDENTIFIER") && (t->value == "if") && tns->size() >= vector_index + 2)
+	//{
+	//	int numspaces = t->vector.numspaces;
+	//	Token(n);
+	//	n->name = "IF_STATEMENT";
+	//	n->precedence = 0;
+	//	n->value = "IF_STATEMENT";
+	//	n->vector = t->vector;
+
+	//	vector_index++;
+	//	
+	//	n->tokens.push_back(tokens[vector_index++]);
+	//	n->tokens.push_back(tokens[vector_index++]);
+
+	//	tokenout->push_back(n);
+	//	return true;
+	//}
+	//else
+	//	return false;
 }
 
 bool parseAssertion(token_stack * tns, token_stack * tokenout, int & vector_index)
@@ -119,6 +166,20 @@ void call(token_stack&tokens, token_stack&tokenout, int& vector_index, bool(*mt)
 		mt(&tokens, &tokenout, vector_index);
 
 		vector_index++;
+	}
+
+	for (auto t : tokens)
+	{
+		token_stack out;
+		int i = 0;
+
+		while (i < t->tokens.size())
+		{
+			mt(&(t->tokens), &out, i);
+			i++;
+		}
+
+		t->tokens = token_stack(out);
 	}
 
 	tokens = token_stack(tokenout);

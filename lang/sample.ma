@@ -23,7 +23,7 @@
     if a == b
       print false
       print true
-      if a == b
+      if g == c
         print false
         print true
 
