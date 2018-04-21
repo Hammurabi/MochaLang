@@ -25,7 +25,7 @@
       print true
       if g == c
         print false
-    print true
+    print truef
 
 //
 // int dosomething(int x, int y)
