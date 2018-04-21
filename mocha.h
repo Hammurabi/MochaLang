@@ -1,4 +1,3 @@
-#pragma once
 #ifndef MOCHA_H
 #define MOCHA_H
 
@@ -8,54 +7,38 @@
 #include <string>
 #include <stack>
 #include <vector>
+#include <fstream>
+#include <cstdlib>
+#include <map>
 
-struct filevector
-{
-	unsigned int line;
-	unsigned int offset;
-	/*
-	The number of spaces before this vector
-	*/
-	unsigned int numspaces;
-};
-
-struct token {
-	std::string name;
-	std::string value;
-	std::vector<token*> tokens;
-	int precedence;
-
-	filevector  vector;
-
-	void print(std::string pre = "")
+namespace {
+	struct filevector
 	{
-		std::cout << pre.c_str() << "TOKEN(" << tokens.size() << "): " << name << " " << value << " vector{line: " << vector.line << " offset: " << vector.offset << " spaces: " << vector.numspaces << "}" << std::endl;
-	}
+		unsigned int line;
+		unsigned int offset;
+		/*
+		The number of spaces before this vector
+		*/
+		unsigned int numspaces;
+	};
 
-	std::string spacing(int i)
-	{
-		std::string string = "";
+	struct token {
+		std::string name;
+		std::string value;
+		std::vector<token*> tokens;
+		int precedence;
 
-		for (int s = 0; s < i; s++)
-			string.append("\t");
+		filevector  vector;
 
-		return string;
-	}
+		void print(std::string pre = "");
 
-	void debug(int spcing = 0)
-	{
-		print(spacing(spcing));
+		std::string spacing(int i);
 
-		for (int i = 0; i < tokens.size(); i ++)
-			tokens[i]->debug(spcing + 1);
-	}
+		void debug(int spcing = 0);
 
-	~token()
-	{
-		for each (auto var in tokens)
-			delete(var);
-	}
-};
+		~token();
+	};
+}
 
 
 // char
@@ -142,784 +125,422 @@ struct token {
 //#define INT 257
 //#define INT 257
 
-template<typename T> struct Buffer
-{
-	T* mBuffer;
-	unsigned long index;
-	unsigned long size;
-
-	void allocate(unsigned long size)
-	{
-		mBuffer = malloc(sizeof(T) * size);
-		index = 0;
-		this->size = size;
-	}
-
-	void reset()
-	{
-		index = 0;
-	}
-
-	unsigned long remaining()
-	{
-		return size - index;
-	}
-
-	void push(T t)
-	{
-		mBuffer[index++] = t;
-	}
-
-	T get()
-	{
-		return mBuffer[index++];
-	}
-};
-
-struct Stack
-{
-	enum { CHAR, UCHAR, SHORT, USHORT, INT, UINT, LONG, ULONG, OBJECT, POINTER, SMARTPOINTER };
-	std::vector<unsigned char> main;
-	std::vector<unsigned int>  indx;
-	std::vector<unsigned char> typs;
-	unsigned int index;
-
-	void push_char(char c)
-	{
-		main.push_back(c);
-		indx.push_back(1);
-		typs.push_back(CHAR);
-		index++;
-	}
-
-	void push_uchar(unsigned char c)
-	{
-		main.push_back(c);
-		indx.push_back(1);
-		typs.push_back(UCHAR);
-		index++;
-	}
-
-	void push_short(short c)
-	{
-		main.push_back((&c)[0]);
-		main.push_back((&c)[1]);
-		indx.push_back(2);
-		typs.push_back(UCHAR);
-		index++;
-	}
-
-	void push_ushort(unsigned short c)
-	{
-		main.push_back((&c)[0]);
-		main.push_back((&c)[1]);
-		indx.push_back(2);
-		typs.push_back(UCHAR);
-		index++;
-	}
-
-	void push_int(int c)
-	{
-		main.push_back((&c)[0]);
-		main.push_back((&c)[1]);
-		main.push_back((&c)[2]);
-		main.push_back((&c)[3]);
-		indx.push_back(4);
-		typs.push_back(UCHAR);
-		index++;
-	}
-
-	void push_uint(unsigned int c)
-	{
-		main.push_back((&c)[0]);
-		main.push_back((&c)[1]);
-		main.push_back((&c)[2]);
-		main.push_back((&c)[3]);
-		indx.push_back(4);
-		typs.push_back(UCHAR);
-		index++;
-	}
-
-	void push(long c)
-	{
-		main.push_back((&c)[0]);
-		main.push_back((&c)[1]);
-		main.push_back((&c)[2]);
-		main.push_back((&c)[3]);
-		main.push_back((&c)[4]);
-		main.push_back((&c)[5]);
-		main.push_back((&c)[6]);
-		main.push_back((&c)[7]);
-		indx.push_back(8);
-		typs.push_back(UCHAR);
-		index++;
-	}
-
-	void push(unsigned long c)
-	{
-		main.push_back((&c)[0]);
-		main.push_back((&c)[1]);
-		main.push_back((&c)[2]);
-		main.push_back((&c)[3]);
-		main.push_back((&c)[4]);
-		main.push_back((&c)[5]);
-		main.push_back((&c)[6]);
-		main.push_back((&c)[7]);
-		indx.push_back(8);
-		typs.push_back(UCHAR);
-		index++;
-	}
-};
-
-struct alu
-{
-	void add_d(Stack& stack)
-	{
-	}
-};
-
-void addition(Stack& stack)
-{
-}
-
-void multiply(Stack& stack)
-{
-}
-
-void run(Buffer<unsigned short> buffer)
-{
-	Stack stack;
-
-	while (buffer.remaining() > 0)
-	{
-		unsigned short bytecode_i = buffer.get();
-
-		switch (bytecode_i)
-		{
-		case ADD: addition(stack);
-		case SUB: addition(stack);
-		case DIV: addition(stack);
-		case MUL: multiply(stack);
-		case MOD: addition(stack);
-
-		default:
-			break;
-		}
-	}
-}
-
-namespace MochaRuntimeEnvironment
-{
-}
-
-#include <fstream>
-#include <cstdlib>
-#include <map>
-
-namespace MochaOpcodeProvider
-{
-#define checkIndex(x, y) ((x >= y) ? 0 : x ++)
-#define checkIndex1(x, y) ((x >= y) ? 0 : x)
-#define checkIndex0(x) ((x <= 0) ? 0 : x - 1)
-	struct TokenStream
-	{
-		std::vector<token> tokens;
-		unsigned int index = 0;
-
-		TokenStream(std::vector<token> ts) : tokens(ts) {}
-
-		token& next()
-		{
-			if (tokens.size() <= index) return tokens[tokens.size() - 1];
-			else return tokens[index++];
-		}
-
-		token& previewLast()
-		{
-			if ((index - 1) <= 0) return tokens[0];
-			else if ((index - 1) >= tokens.size()) return tokens[tokens.size() - 1];
-			return tokens[index - 1];
-		}
-
-		token& previewNext()
-		{
-			if (tokens.size() <= index) return tokens[tokens.size() - 1];
-			else return tokens[index];
-		}
-
-		bool hasPrevious()
-		{
-			return index > 0;
-		}
-
-		bool hasNext()
-		{
-			return index < tokens.size();
-		}
-
-		unsigned int remaining()
-		{
-			return tokens.size() - index;
-		}
-	};
-	
-	struct GRAMMAR_RULE
-	{
-		std::string name;
-		std::vector<std::string> rules;
-
-		GRAMMAR_RULE(std::string n, std::vector<std::string> r) : name(n), rules(r) {}
-
-		void parse(TokenStream& stream, std::vector<token>& tokens)
-		{
-			using namespace std;
-			int i = stream.index;
-
-			int amt_spaces = 0;
-			token* lookoutfor = 0;
-
-			//int last____space = stream.previewLast().vector.numspaces;
-			//int current_space = stream.next().vector.numspaces; 
-			
-
-
-			//if (rules[0] == "[WHITESPACE(>)]" && (current_space > last____space))
-			//{
-			//	tokens.push_back(token(stream.previewLast()));
-
-			//	while (stream.next().vector.numspaces > last____space)
-			//	{
-			//		tokens.push_back(token(stream.previewLast()));
-			//	}
-			//}
-			//else stream.index = i;
-		}
-
-		bool checkMatch(token& t, TokenStream& stream)
-		{
-			using namespace std;
-			int i = stream.index;
-
-			int amt_spaces = 0;
-			token* lookoutfor = 0;
-
-			if (rules.size() > stream.remaining()) return false;
-
-			//check if rule is special
-			if ((rules[0] == "[WHITESPACE(>)]" && stream.hasPrevious()))
-			{
-				if (t.vector.numspaces > stream.previewLast().vector.numspaces)
-				{
-					t.print();
-					stream.previewLast().print();
-					return true;
-				}
-			} //otherwise check rulename matches token name
-			
-			if (rules[0] == t.name)
-			{
-			}
-
-			stream.index = i;
-
-			//for (int i = 0; i < rules.size(); i++)
-			//{
-			//	token t = stream.next();
-			//	token last = stream.previewLast();
-
-			//	//SPECIAL TOKEN ACCESS
-			//	if (rules[i].at(0) == '*')
-			//	{
-			//		lookoutfor = &stream.previewNext();
-			//	} else if (rules[i].at(0) == '[')
-			//	{
-			//		if (rules[i] == "[WHITESPACE(>)]")
-			//		{
-			//			if (!(t.vector.numspaces > last.vector.numspaces)) return false;
-			//		}else if (rules[i] == "[WHITESPACE(<)]")
-			//		{
-			//			if (!(t.vector.numspaces < last.vector.numspaces)) return false;
-			//		} else if (rules[i] == "[WHITESPACE(>=)]")
-			//		{
-			//			if (!(t.vector.numspaces >= last.vector.numspaces)) return false;
-			//		}
-			//		else if (rules[i] == "[WHITESPACE(<=)]")
-			//		{
-			//			if (!(t.vector.numspaces <= last.vector.numspaces)) return false;
-			//		}
-			//		else if (rules[i] == "[endl]")
-			//		{
-			//			//This part will never be used hopefully.
-			//		}
-			//	}
-			//	else if (t.name != rules[i])
-			//	{
-			//		if (lookoutfor)
-			//		{
-
-			//		}
-			//		else
-			//		{
-			//			stream.index = i;
-			//			return false;
-			//		}
-			//	}
-			//}
-
-			return false;
-		}
-	};
-
-	std::vector<GRAMMAR_RULE> grammar;
-	//std::vector<void(*)()>				  grammar_;
-
-	char SPECIAL[] = {
-		'\\',
-		'.',
-		'+',
-		'-',
-		'*',
-		'/',
-		'-',
-	};
-
-	std::map<std::string, std::string>				specials;
-	std::vector<std::string>						keywords;
-	std::map<std::string, std::string>              types;
-	std::map<std::string, int>						precedence;
-
-	//std::string keywords[] = {"for", "while", "class", "struct", "goto", "mark", "" };
-
-	bool hasNext(const std::string string, int index)
-	{
-		return string.size() > (index + 1);
-	}
-
-	char getNext(const std::string string, int index)
-	{
-		return string.at(index + 1);
-	}
-
-	bool isSpecial(const std::string str, std::vector<token*>& tokens, const int line, const int offset, const int spaces)
-	{
-		if (specials.find(str) != specials.end())
-		{
-			token t;
-			t.name = specials[str];
-			t.value = str;
-			t.vector.line = line;
-			t.vector.numspaces = spaces;
-			t.vector.offset = offset;
-			tokens.push_back(new token(t));
-			return true;
-		}
-
-		return false;
-	}
-
-	bool isKeyword(const std::string str, std::vector<token>& tokens)
-	{
-		for (int i = 0; i < keywords.size(); i++)
-			if (str == keywords[i]) return true;
-
-		return false;
-	}
-
-	std::string typeof(std::string& str)
-	{
-		if (isalpha(str.at(0))) return "IDENTIFIER";
-		for (int i = 0; i < str.length(); i++) if (isalpha(str.at(i))) return "IDENTIFIER";
-
-		std::string number;
-		for (int i = 0; i < str.length(); i++) if (!isalpha(str.at(i)) && isalnum(str.at(i))) number += str.at(i);
-		str = number;
-
-		return "NUMBER";
-	}
-
-	std::string chartypeof(std::string& c)
-	{
-		//if (c == '(') return "OPEN_PARENTHESIS";
-		//else if (c == ')') return "CLOSED_PARENTHESIS";
-		//else if (c == '[') return "OPEN_BRACKET";
-		//else if (c == ']') return "CLOSED_BRACKET";
-		//else if (c == '*') return "MULTIPLICATION";
-		//else if (c == '&') return "AND";
-		//else if (c == '^') return "XOR";
-		//else if (c == '$') return "DOLLARSIGN";
-		//else if (c == '/') return "DIVISION";
-		//else if (c == '.') return "DOT";
-		//else if (c == ':') return "COLON";
-		//else if (c == ';') return "SEMI_COLON";
-		//else if (c == '+') return "ADDITION";
-		//else if (c == '-') return "SUBTRACTION";
-		//else if (c == '=') return "ASSIGN";
-		//else if (c == '@') return "AT";
-		//else if (c == '!') return "NOT";
-		//else if (c == '~') return "ACCENT";
-		//else if (c == '#') return "HASH";
-		//else if (c == ',') return "COMMA";
-		//else if (c == '?') return "QUESTION_MARK";
-		//else if (c == '}') return "OPEN_CURLY";
-		//else if (c == '{') return "CLOSE_CURLY";
-		//else if (c == '|') return "OR";
-
-		for (auto const& key : types)
-			if (key.first == c) return key.second;
-			//std::cout << key.first << " " << c << std::endl;
-
-		return "";
-	}
-
-	int getprecedence(std::string& c)
-	{
-		for (auto const& key : precedence)
-			if (key.first == c) return key.second;
-
-		return 0;
-	}
-
-	void loop(std::vector<token*>& tokens, std::string& program, std::string& builder, int& i, int& offset, int& spaces, int& line, bool& countspaces, bool& isIdentifier)
-	{
-		using namespace std;
-
-		char C = program.at(i);
-
-		if (C == '\n')
-		{
-			if (isIdentifier)
-			{
-				isIdentifier = false;
-
-				token t;
-
-				t.name = std::string(typeof(builder));
-				t.value = std::string(builder.c_str());
-
-				t.vector.line = line;
-				t.vector.numspaces = spaces;
-				t.vector.offset = offset;
-
-				tokens.push_back(new token(t));
-
-				builder = "";
-			}
-
-			line++;
-			offset = 1;
-			spaces = 0;
-			countspaces = true;
-			return;
-		}
-		else if (C == ' ') {
-			if (countspaces)
-				spaces++;
-			if (isIdentifier)
-			{
-				isIdentifier = false;
-
-				token t;
-
-				t.name = std::string(typeof(builder));
-				t.value = std::string(builder.c_str());
-
-				t.vector.line = line;
-				t.vector.numspaces = spaces;
-				t.vector.offset = offset;
-
-				tokens.push_back(new token(t));
-
-				builder = "";
-			}
-			return;
-		}
-		else if (C == '\0')
-		{
-			isIdentifier = false;
-
-			token t;
-
-			t.name = std::string(typeof(builder));
-			t.value = std::string(builder.c_str());
-
-			t.vector.line = line;
-			t.vector.numspaces = spaces;
-			t.vector.offset = offset;
-
-			tokens.push_back(new token(t));
-
-			builder = "";
-		}
-		else if (C == '\t') spaces += 4;
-		else
-			countspaces = false;
-
-		char L = (hasNext(program, i) ? program.at(i + 1) : '\0');
-
-		std::string cn = "";
-		cn = program.at(i);
-		cn = cn + L;
-
-		if (program.at(i) != '\s' && program.at(i) != '\t' && program.at(i) != '\n')
-			countspaces = false;
-
-		if (isSpecial(cn, tokens, line, offset, spaces))
-		{
-			offset += 2;
-			i++;
-			countspaces = false;
-			return;
-		}
-		else
-		{
-			if (isIdentifier && (C == '_' || C == '$' || isalnum(C)))
-			{
-				builder = builder + program.at(i);
-			}
-			else if (isIdentifier)
-			{
-				isIdentifier = false;
-
-				token t;
-
-				t.name = std::string(typeof(builder));
-				t.value = std::string(builder.c_str());
-
-				t.vector.line = line;
-				t.vector.numspaces = spaces;
-				t.vector.offset = offset;
-
-				tokens.push_back(new token(t));
-
-				builder = "";
-			}
-			else if (!isIdentifier && (C == '_' || C == '$' || isalnum(C)))
-			{
-				builder = program.at(i);// +"");
-				isIdentifier = true;
-			}
-			//else if (!isNumber && ( (!isalpha(C) && isalnum(C)) || C == '_'))
-			//{
-			//	builder.append(C + "");
-			//	isNumber = true;
-			//}
-			//else if ((!isalpha(C) && isalnum(C)) && isNumber)
-			//{
-			//	builder.append(C + "");
-			//}
-			//else if (!(!isalpha(C) && isalnum(C)) && isNumber)
-			//{
-
-			//}
-			if (C != ' ' && C != '\n' && C != '\t' && !isIdentifier)
-			{
-				std::string check;
-				check = program.at(i);
-
-				token t;
-				t.name = chartypeof(check);
-				t.value = C;
-				t.vector.line = line;
-				t.vector.numspaces = spaces;
-				t.vector.offset = offset;
-				t.precedence = getprecedence(check);
-				tokens.push_back(new token(t));
-			}
-			else {
-			}
-
-			offset++;
-		}
-	}
-
-	std::vector<token*> lex(std::string program, std::map<std::string, std::string> lexmap)
-	{
-		std::vector<token*> tokens;
-		std::string        builder = "";
-
-		program = program + " ";
-
-		//#define N (hasNext(program, i) ? getNext(program, i) : '\0')
-		//#define L (hasNext(program, i) ? (getNext(program, i) + "") : "")
-		//#define C program.at(i)
-
-		int line = 0;
-		int offset = 0;
-		int spaces = 0;
-		bool countspaces = true;
-
-		bool isIdentifier = false;
-
-		for (int i = 0; i < program.size(); i++)
-			loop(tokens, program, builder, i, offset, spaces, line, countspaces, isIdentifier);
-		//#undef N
-		//#undef L
-		//#undef C
-
-		return tokens;
-	}
+//namespace MochaRuntimeEnvironment
+//{
+//	template<typename T> struct Buffer
+//	{
+//		T* mBuffer;
+//		unsigned long index;
+//		unsigned long size;
+//
+//		void allocate(unsigned long size)
+//		{
+//			mBuffer = malloc(sizeof(T) * size);
+//			index = 0;
+//			this->size = size;
+//		}
+//
+//		void reset()
+//		{
+//			index = 0;
+//		}
+//
+//		unsigned long remaining()
+//		{
+//			return size - index;
+//		}
+//
+//		void push(T t)
+//		{
+//			mBuffer[index++] = t;
+//		}
+//
+//		T get()
+//		{
+//			return mBuffer[index++];
+//		}
+//	};
+//
+//	struct Stack
+//	{
+//		enum { CHAR, UCHAR, SHORT, USHORT, INT, UINT, LONG, ULONG, OBJECT, POINTER, SMARTPOINTER };
+//		std::vector<unsigned char> main;
+//		std::vector<unsigned int>  indx;
+//		std::vector<unsigned char> typs;
+//		unsigned int index;
+//
+//		void push_char(char c)
+//		{
+//			main.push_back(c);
+//			indx.push_back(1);
+//			typs.push_back(CHAR);
+//			index++;
+//		}
+//
+//		void push_uchar(unsigned char c)
+//		{
+//			main.push_back(c);
+//			indx.push_back(1);
+//			typs.push_back(UCHAR);
+//			index++;
+//		}
+//
+//		void push_short(short c)
+//		{
+//			main.push_back((&c)[0]);
+//			main.push_back((&c)[1]);
+//			indx.push_back(2);
+//			typs.push_back(UCHAR);
+//			index++;
+//		}
+//
+//		void push_ushort(unsigned short c)
+//		{
+//			main.push_back((&c)[0]);
+//			main.push_back((&c)[1]);
+//			indx.push_back(2);
+//			typs.push_back(UCHAR);
+//			index++;
+//		}
+//
+//		void push_int(int c)
+//		{
+//			main.push_back((&c)[0]);
+//			main.push_back((&c)[1]);
+//			main.push_back((&c)[2]);
+//			main.push_back((&c)[3]);
+//			indx.push_back(4);
+//			typs.push_back(UCHAR);
+//			index++;
+//		}
+//
+//		void push_uint(unsigned int c)
+//		{
+//			main.push_back((&c)[0]);
+//			main.push_back((&c)[1]);
+//			main.push_back((&c)[2]);
+//			main.push_back((&c)[3]);
+//			indx.push_back(4);
+//			typs.push_back(UCHAR);
+//			index++;
+//		}
+//
+//		void push(long c)
+//		{
+//			main.push_back((&c)[0]);
+//			main.push_back((&c)[1]);
+//			main.push_back((&c)[2]);
+//			main.push_back((&c)[3]);
+//			main.push_back((&c)[4]);
+//			main.push_back((&c)[5]);
+//			main.push_back((&c)[6]);
+//			main.push_back((&c)[7]);
+//			indx.push_back(8);
+//			typs.push_back(UCHAR);
+//			index++;
+//		}
+//
+//		void push(unsigned long c)
+//		{
+//			main.push_back((&c)[0]);
+//			main.push_back((&c)[1]);
+//			main.push_back((&c)[2]);
+//			main.push_back((&c)[3]);
+//			main.push_back((&c)[4]);
+//			main.push_back((&c)[5]);
+//			main.push_back((&c)[6]);
+//			main.push_back((&c)[7]);
+//			indx.push_back(8);
+//			typs.push_back(UCHAR);
+//			index++;
+//		}
+//	};
+//
+//	struct alu
+//	{
+//		void add_d(Stack& stack)
+//		{
+//		}
+//	};
+//
+//	void addition(Stack& stack)
+//	{
+//	}
+//
+//	void multiply(Stack& stack)
+//	{
+//	}
+//
+//	void run(Buffer<unsigned short> buffer)
+//	{
+//		Stack stack;
+//
+//		while (buffer.remaining() > 0)
+//		{
+//			unsigned short bytecode_i = buffer.get();
+//
+//			switch (bytecode_i)
+//			{
+//			case ADD: addition(stack);
+//			case SUB: addition(stack);
+//			case DIV: addition(stack);
+//			case MUL: multiply(stack);
+//			case MOD: addition(stack);
+//
+//			default:
+//				break;
+//			}
+//		}
+//	}
+//}
 
 #define token_stack std::vector<token*>
 #define remaining_ (tokens.size() - vector_index)
 #define previewP   (vector_index > 0 ? vector_index - 1 : 0)
 #define previewN   (vector_index < (tokens.size() - 1) ? vector_index + 1 : tokens.size() - 1)
 #define Token(x) token* x = new token()
-	Token(empty);
+Token(empty);
 
-	class Parser
-	{
-	public:
-		bool parseBody(token_stack*tns, token_stack*tokenout, int&vector_index);
-		bool parseParenthesis(token_stack*tns, token_stack*tokenout, int&vector_index);
-		bool parseBraces(token_stack*tns, token_stack*tokenout, int&vector_index);
-		bool parseClass(token_stack*tns, token_stack*tokenout, int&vector_index);
-		bool parseMathOperator(token_stack*tns, token_stack*tokenout, int&vector_index);
-		bool parseBoolOperator(token_stack*tns, token_stack*tokenout, int&vector_index);
+class Parser
+{
+public:
+	bool parseBody(token_stack*tns, token_stack*tokenout, int&vector_index);
+	//bool parseParenthesis(token_stack*tns, token_stack*tokenout, int&vector_index);
+	//bool parseBraces(token_stack*tns, token_stack*tokenout, int&vector_index);
+	//bool parseClass(token_stack*tns, token_stack*tokenout, int&vector_index);
+	//bool parseMathOperator(token_stack*tns, token_stack*tokenout, int&vector_index);
+	//bool parseBoolOperator(token_stack*tns, token_stack*tokenout, int&vector_index);
 
-		bool parse(token_stack* tokns, token_stack* tokenout, int& vector_index);
-		token_stack parse(token_stack& tokens);
-	};
+	bool parse(token_stack* tokns, token_stack* tokenout, int& vector_index);
+	token_stack parse(token_stack& tokens);
+};
 
 #undef token_stack
 
-	void compile(std::string program)
-	{
-	}
+class MochaOpcodeProvider
+{
+public:
+#define checkIndex(x, y) ((x >= y) ? 0 : x ++)
+#define checkIndex1(x, y) ((x >= y) ? 0 : x)
+#define checkIndex0(x) ((x <= 0) ? 0 : x - 1)
+	//struct TokenStream
+	//{
+	//	std::vector<token> tokens;
+	//	unsigned int index = 0;
 
-	std::string loadText(std::string location)
-	{
-		std::string string("");
-		std::string stline("");
-		std::ifstream file;
+	//	TokenStream(std::vector<token> ts) : tokens(ts) {}
 
-		file.open(location.c_str());
-		if (!file.is_open())
-			return "";
+	//	token& next()
+	//	{
+	//		if (tokens.size() <= index) return tokens[tokens.size() - 1];
+	//		else return tokens[index++];
+	//	}
 
-		while (!file.eof())
-		{
-			getline(file, stline);
+	//	token& previewLast()
+	//	{
+	//		if ((index - 1) <= 0) return tokens[0];
+	//		else if ((index - 1) >= tokens.size()) return tokens[tokens.size() - 1];
+	//		return tokens[index - 1];
+	//	}
 
-			int index = stline.find("//");
-			if (index == -1) index = stline.length();
-			string.append(stline.substr(0, index) + '\n');
-		}
+	//	token& previewNext()
+	//	{
+	//		if (tokens.size() <= index) return tokens[tokens.size() - 1];
+	//		else return tokens[index];
+	//	}
 
-		return string;
-	}
+	//	bool hasPrevious()
+	//	{
+	//		return index > 0;
+	//	}
 
-	std::string loadSpecials(std::string location)
-	{
-		std::string string("");
-		std::string stline("");
-		std::ifstream file;
+	//	bool hasNext()
+	//	{
+	//		return index < tokens.size();
+	//	}
 
-		file.open(location.c_str());
-		if (!file.is_open())
-			return "";
+	//	unsigned int remaining()
+	//	{
+	//		return tokens.size() - index;
+	//	}
+	//};
+	
+	//struct GRAMMAR_RULE
+	//{
+	//	std::string name;
+	//	std::vector<std::string> rules;
 
-		while (!file.eof())
-		{
-			getline(file, stline);
-			if (stline.length() == 0) continue;
+	//	GRAMMAR_RULE(std::string n, std::vector<std::string> r) : name(n), rules(r) {}
 
-			int index = stline.find(" ");
-			if (index == -1) index = stline.length();
-			specials[stline.substr(0, index)] = stline.substr(index + 1);
+	//	//void parse(TokenStream& stream, std::vector<token>& tokens)
+	//	//{
+	//	//	using namespace std;
+	//	//	int i = stream.index;
 
-			string.append(stline.substr(0, index) + '\n');
-		}
+	//	//	int amt_spaces = 0;
+	//	//	token* lookoutfor = 0;
 
-		return string;
-	}
+	//	//	//int last____space = stream.previewLast().vector.numspaces;
+	//	//	//int current_space = stream.next().vector.numspaces; 
+	//	//	
 
-	std::string loadKeywords(std::string location)
-	{
-		std::string string("");
-		std::string stline("");
-		std::ifstream file;
 
-		file.open(location.c_str());
-		if (!file.is_open())
-			return "";
+	//	//	//if (rules[0] == "[WHITESPACE(>)]" && (current_space > last____space))
+	//	//	//{
+	//	//	//	tokens.push_back(token(stream.previewLast()));
 
-		while (!file.eof())
-		{
-			getline(file, stline);
-			if (stline.length() == 0) continue;
+	//	//	//	while (stream.next().vector.numspaces > last____space)
+	//	//	//	{
+	//	//	//		tokens.push_back(token(stream.previewLast()));
+	//	//	//	}
+	//	//	//}
+	//	//	//else stream.index = i;
+	//	//}
 
-			keywords.push_back(stline);
-		}
+	//	//bool checkMatch(token& t, TokenStream& stream)
+	//	//{
+	//	//	using namespace std;
+	//	//	int i = stream.index;
 
-		return string;
-	}
+	//	//	int amt_spaces = 0;
+	//	//	token* lookoutfor = 0;
 
-	std::string loadPrecedence(std::string location)
-	{
-		std::string string("");
-		std::string stline("");
-		std::ifstream file;
+	//	//	if (rules.size() > stream.remaining()) return false;
 
-		file.open(location.c_str());
-		if (!file.is_open())
-			return "";
+	//	//	//check if rule is special
+	//	//	if ((rules[0] == "[WHITESPACE(>)]" && stream.hasPrevious()))
+	//	//	{
+	//	//		if (t.vector.numspaces > stream.previewLast().vector.numspaces)
+	//	//		{
+	//	//			t.print();
+	//	//			stream.previewLast().print();
+	//	//			return true;
+	//	//		}
+	//	//	} //otherwise check rulename matches token name
+	//	//	
+	//	//	if (rules[0] == t.name)
+	//	//	{
+	//	//	}
 
-		std::string arg;
-		std::string nam;
-		std::string pnc;
+	//	//	stream.index = i;
 
-		file >> arg;
-		file >> nam;
-		file >> pnc;
+	//	//	//for (int i = 0; i < rules.size(); i++)
+	//	//	//{
+	//	//	//	token t = stream.next();
+	//	//	//	token last = stream.previewLast();
 
-		while (file.good())
-		{
-			file >> arg;
-			file >> nam;
-			file >> pnc;
+	//	//	//	//SPECIAL TOKEN ACCESS
+	//	//	//	if (rules[i].at(0) == '*')
+	//	//	//	{
+	//	//	//		lookoutfor = &stream.previewNext();
+	//	//	//	} else if (rules[i].at(0) == '[')
+	//	//	//	{
+	//	//	//		if (rules[i] == "[WHITESPACE(>)]")
+	//	//	//		{
+	//	//	//			if (!(t.vector.numspaces > last.vector.numspaces)) return false;
+	//	//	//		}else if (rules[i] == "[WHITESPACE(<)]")
+	//	//	//		{
+	//	//	//			if (!(t.vector.numspaces < last.vector.numspaces)) return false;
+	//	//	//		} else if (rules[i] == "[WHITESPACE(>=)]")
+	//	//	//		{
+	//	//	//			if (!(t.vector.numspaces >= last.vector.numspaces)) return false;
+	//	//	//		}
+	//	//	//		else if (rules[i] == "[WHITESPACE(<=)]")
+	//	//	//		{
+	//	//	//			if (!(t.vector.numspaces <= last.vector.numspaces)) return false;
+	//	//	//		}
+	//	//	//		else if (rules[i] == "[endl]")
+	//	//	//		{
+	//	//	//			//This part will never be used hopefully.
+	//	//	//		}
+	//	//	//	}
+	//	//	//	else if (t.name != rules[i])
+	//	//	//	{
+	//	//	//		if (lookoutfor)
+	//	//	//		{
 
-			precedence[arg] = std::stoi(pnc);
-			types[arg] = nam;
-		}
+	//	//	//		}
+	//	//	//		else
+	//	//	//		{
+	//	//	//			stream.index = i;
+	//	//	//			return false;
+	//	//	//		}
+	//	//	//	}
+	//	//	//}
 
-		return string;
-	}
+	//	//	return false;
+	//	//}
+	//};
 
-	std::string loadncheck(std::string& s, std::ifstream& f)
-	{
-		f >> s;
-		return s;
-	}
+	//static std::vector<GRAMMAR_RULE> grammar;
+	//std::vector<void(*)()>				  grammar_;
 
-	void loadGrammarFile(std::string location)
-	{
-		using namespace std;
-		ifstream file;
+	static std::map<std::string, std::string>				specials;
+	static std::vector<std::string>							keywords;
+	static std::map<std::string, std::string>				types;
+	static std::map<std::string, int>						precedence;
 
-		file.open(location.c_str());
-		if (!file.is_open())
-			return;
+	//std::string keywords[] = {"for", "while", "class", "struct", "goto", "mark", "" };
 
-		string arg;
-		string name;
-		string version;
+	static bool hasNext(const std::string string, int index);
 
-		file >> version;
+	static char getNext(const std::string string, int index);
 
-		while (file.good())
-		{
-			vector<string> grammar_rule;
-			file >> name;
+	static bool isSpecial(const std::string str, std::vector<token*>& tokens, const int line, const int offset, const int spaces);
 
-			while (loadncheck(arg, file) != "[stop]")
-			{
-				grammar_rule.push_back(arg);
-			}
+	static bool isKeyword(const std::string str, std::vector<token*>& tokens);
 
-			GRAMMAR_RULE rule(name, grammar_rule);
-			grammar.push_back(rule);
-		}
-	}
+	static std::string typeof(std::string& str);
+
+	static std::string chartypeof(std::string& c);
+
+	static int getprecedence(std::string& c);
+
+	static void loop(std::vector<token*>& tokens, std::string& program, std::string& builder, int& i, int& offset, int& spaces, int& line, bool& countspaces, bool& isIdentifier);
+
+	static std::vector<token*> lex(std::string program, std::map<std::string, std::string> lexmap);
+
+	static void compile(std::string program);
+
+	static std::string loadText(std::string location);
+
+	static std::string loadSpecials(std::string location);
+
+	static std::string loadKeywords(std::string location);
+
+	static std::string loadPrecedence(std::string location);
+
+	static std::string loadncheck(std::string& s, std::ifstream& f);
+
+	//static void loadGrammarFile(std::string location)
+	//{
+	//	using namespace std;
+	//	ifstream file;
+
+	//	file.open(location.c_str());
+	//	if (!file.is_open())
+	//		return;
+
+	//	string arg;
+	//	string name;
+	//	string version;
+
+	//	file >> version;
+
+	//	while (file.good())
+	//	{
+	//		vector<string> grammar_rule;
+	//		file >> name;
+
+	//		while (loadncheck(arg, file) != "[stop]")
+	//		{
+	//			grammar_rule.push_back(arg);
+	//		}
+
+	//		//GRAMMAR_RULE rule(name, grammar_rule);
+	//		//grammar.push_back(rule);
+	//	}
+	//}
 }
 
 #endif !MOCHA_H
