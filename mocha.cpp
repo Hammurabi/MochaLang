@@ -28,18 +28,26 @@ bool parseClasses(token_stack * tns, token_stack * tokenout, int & vector_index)
 	{
 		vector_index++;
 		t = tokens[vector_index];
-		while (t->name != "BODY" && vector_index < tokens.size())
+		while (vector_index < tokens.size())
 		{
-			Class->tokens.push_back(t);
 			t = tokens[vector_index++];
+
+			if(t->name == "BODY")
+			{
+				Class->tokens.push_back(t);
+				tokenout->push_back(Class);
+				return true;
+			}
+			//else if (t->name == "CLASS") parseClasses(tns, tokenout, vector_index);
+			else Class->tokens.push_back(t);
 		}
 
-		if (vector_index < tokens.size())
+		if (vector_index >= tokens.size())
 		{
 			Class->tokens.push_back(t);
 			tokenout->push_back(Class);
+			return true;
 		}
-		else return false;
 		return true;
 	}
 	else tokenout->push_back(t);
@@ -284,11 +292,11 @@ token_stack Parser::parse(token_stack & tokens)
 	vector_index = 0;
 
 	//THIS IS RECURSIVE
-	while (vector_index < tokens.size())
-	{
+	//while (vector_index < tokens.size())
+	//{
 		parseBody(&tokens, &tokenout, vector_index, refMap);
-		vector_index++;
-	}
+	//	vector_index++;
+	//}
 
 	std::map<unsigned int, token_stack> lmap;
 
@@ -312,17 +320,17 @@ token_stack Parser::parse(token_stack & tokens)
 	vector_index = 0;
 
 	call(tokens, tokenout, vector_index, parse_8); //check assertions
-	call(tokens, tokenout, vector_index, parseIf); //check ifs
+	//call(tokens, tokenout, vector_index, parseIf); //check ifs
 
-	while (vector_index < tokens.size())
-	{
-		parseClasses(&tokens, &tokenout, vector_index);
-		vector_index++;
-	}
+	//while (vector_index < tokens.size())
+	//{
+	//	parseClasses(&tokens, &tokenout, vector_index);
+	//	vector_index++;
+	//}
 
-	vector_index = 0;
-	tokens = token_stack(tokenout);
-	tokenout.clear();
+	//vector_index = 0;
+	//tokens = token_stack(tokenout);
+	//tokenout.clear();
 
 #undef remaining
 
@@ -336,13 +344,11 @@ std::cout << "---------------------------------------------------\n";
 return tokens;
 }
 
-bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap)
+bool parseBody2(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap)
 {
 	token_stack&tokens = *tns;
 	token* t = (tokens)[vector_index];
 	token* next = (tokens)[previewN];
-
-	using namespace std;
 
 	if (t->vector.numspaces < next->vector.numspaces)
 	{
@@ -372,12 +378,12 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 			token* next = (tokens)[previewN];
 
 			if (t->vector.numspaces < next->vector.numspaces)
-				parseBody(tns, &(n->tokens), vector_index, referenceMap);
+				parseBody2(tns, &(n->tokens), vector_index, referenceMap);
 			else if (t->vector.numspaces < numspaces)
 			{
 				int current = t->vector.numspaces;
 
-				vector<unsigned int> sortedList;
+				std::vector<unsigned int> sortedList;
 
 				for (auto& i : referenceMap)
 					sortedList.push_back(i.first);
@@ -414,7 +420,7 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 			{
 				int current = t->vector.numspaces;
 
-				vector<unsigned int> sortedList;
+				std::vector<unsigned int> sortedList;
 
 				for (auto& i : referenceMap)
 					sortedList.push_back(i.first);
@@ -449,6 +455,81 @@ bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_i
 
 		return false;
 	}
+}
+
+bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_index, std::map<unsigned int, token_stack*>& referenceMap)
+{
+	if (!tns || !tokenout || !&referenceMap) return false;
+	if (tns->size() <= 0) return false;
+	token_stack&tokens = *tns;
+	token* t = (tokens)[vector_index];
+	token* next = (tokens)[previewN];
+
+	int last = 0;
+
+	Token(global);
+	global->name = "GLOBAL";
+	global->value = "GLOBAL";
+
+	global->vector.line = 0;
+	global->vector.offset = 0;
+	global->vector.numspaces = 1000000000;
+
+	token_stack* out = &global->tokens;
+
+	using namespace std;
+
+	while (vector_index < tokens.size())
+	{
+		t = tokens[vector_index];
+
+		if (t->vector.numspaces < last)
+		{
+			tokenout->push_back(global);
+
+			global = new token();
+			global->name = "BODY";
+			global->value = "BODY";
+
+			global->vector = t->vector;
+			out = &global->tokens;
+			last = t->vector.numspaces;
+		}
+		else out->push_back(t);
+
+		vector_index++;
+	}
+
+	if (out->size() > 0)
+	{
+		if (t->vector.numspaces > last)
+			tokenout->push_back(global);
+	}
+
+	vector_index = 0;
+	tokens = token_stack(*tokenout);
+	tokenout->clear();
+
+	while (vector_index < tokens.size())
+	{
+		t = tokens[vector_index];
+		int i = 0;
+
+		while (i < t->tokens.size())
+		{
+			parseBody2(&(t->tokens), tokenout, i, referenceMap);
+
+			i++;
+		}
+
+		vector_index++;
+	}
+
+	//while (true) {}
+
+	//std::cout << "lol?\n";
+
+	return false;
 }
 
 bool Parser::parseAssertion(token_stack * tns, token_stack * tokenout, int & vector_index)

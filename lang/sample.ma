@@ -27,13 +27,10 @@ class test
       if g == c
         print false
         print truef
-class test
-    if a == b
-      print false
-      print true
-      if g == c
-        print false
-        print truef
+print truefadwdawdawdawd
+
+class test2
+      print faisfaish
 
 //
 // int dosomething(int x, int y)
