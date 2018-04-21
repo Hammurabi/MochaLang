@@ -49,10 +49,10 @@ token_stack Parser::parse(token_stack & tokens)
 	return tokenout;
 }
 
-std::map<std::string, std::string>				MochaOpcodeProvider::specials;
-std::vector<std::string>						MochaOpcodeProvider::keywords;
-std::map<std::string, std::string>				MochaOpcodeProvider::types;
-std::map<std::string, int>						MochaOpcodeProvider::precedence;
+//std::map<std::string, std::string>				MochaOpcodeProvider::specials;
+//std::vector<std::string>							MochaOpcodeProvider::keywords;
+//std::map<std::string, std::string>				MochaOpcodeProvider::types;
+//std::map<std::string, int>						MochaOpcodeProvider::precedence;
 
 bool Parser::parseBody(token_stack * tns, token_stack * tokenout, int & vector_index)
 {
@@ -127,23 +127,27 @@ void token::debug(int spcing)
 		tokens[i]->debug(spcing + 1);
 }
 
+token::token()
+{
+}
+
 token::~token()
 {
 	for each (auto var in tokens)
 		delete(var);
 }
 
-bool MochaOpcodeProvider::hasNext(const std::string string, int index)
+bool MochaLexer::hasNext(const std::string string, int index)
 {
 	return string.size() > (index + 1);
 }
 
-char MochaOpcodeProvider::getNext(const std::string string, int index)
+char MochaLexer::getNext(const std::string string, int index)
 {
 	return string.at(index + 1);
 }
 
-bool MochaOpcodeProvider::isSpecial(const std::string str, std::vector<token*>& tokens, const int line, const int offset, const int spaces)
+bool MochaLexer::isSpecial(const std::string str, std::vector<token*>& tokens, const int line, const int offset, const int spaces)
 {
 	if (specials.find(str) != specials.end())
 	{
@@ -160,7 +164,7 @@ bool MochaOpcodeProvider::isSpecial(const std::string str, std::vector<token*>& 
 	return false;
 }
 
-bool MochaOpcodeProvider::isKeyword(const std::string str, std::vector<token*>& tokens)
+bool MochaLexer::isKeyword(const std::string str, std::vector<token*>& tokens)
 {
 	for (int i = 0; i < keywords.size(); i++)
 		if (str == keywords[i]) return true;
@@ -168,7 +172,7 @@ bool MochaOpcodeProvider::isKeyword(const std::string str, std::vector<token*>& 
 	return false;
 }
 
-std::string MochaOpcodeProvider::typeof(std::string & str)
+std::string MochaLexer::typeof(std::string & str)
 {
 	if (isalpha(str.at(0))) return "IDENTIFIER";
 	for (int i = 0; i < str.length(); i++) if (isalpha(str.at(i))) return "IDENTIFIER";
@@ -180,7 +184,7 @@ std::string MochaOpcodeProvider::typeof(std::string & str)
 	return "NUMBER";
 }
 
-std::string MochaOpcodeProvider::chartypeof(std::string & c)
+std::string MochaLexer::chartypeof(std::string & c)
 {
 	//if (c == '(') return "OPEN_PARENTHESIS";
 	//else if (c == ')') return "CLOSED_PARENTHESIS";
@@ -214,7 +218,7 @@ std::string MochaOpcodeProvider::chartypeof(std::string & c)
 	return "";
 }
 
-int MochaOpcodeProvider::getprecedence(std::string & c)
+int MochaLexer::getprecedence(std::string & c)
 {
 	for (auto const& key : precedence)
 		if (key.first == c) return key.second;
@@ -222,7 +226,7 @@ int MochaOpcodeProvider::getprecedence(std::string & c)
 	return 0;
 }
 
-void MochaOpcodeProvider::loop(std::vector<token*>& tokens, std::string & program, std::string & builder, int & i, int & offset, int & spaces, int & line, bool & countspaces, bool & isIdentifier)
+void MochaLexer::loop(std::vector<token*>& tokens, std::string & program, std::string & builder, int & i, int & offset, int & spaces, int & line, bool & countspaces, bool & isIdentifier)
 {
 	using namespace std;
 
@@ -375,7 +379,7 @@ void MochaOpcodeProvider::loop(std::vector<token*>& tokens, std::string & progra
 	}
 }
 
-std::vector<token*> MochaOpcodeProvider::lex(std::string program, std::map<std::string, std::string> lexmap)
+std::vector<token*> MochaLexer::lex(std::string program, std::map<std::string, std::string> lexmap)
 {
 	std::vector<token*> tokens;
 	std::string        builder = "";
@@ -402,11 +406,11 @@ std::vector<token*> MochaOpcodeProvider::lex(std::string program, std::map<std::
 	return tokens;
 }
 
-void MochaOpcodeProvider::compile(std::string program)
+void MochaLexer::compile(std::string program)
 {
 }
 
-std::string MochaOpcodeProvider::loadText(std::string location)
+std::string MochaLexer::loadText(std::string location)
 {
 	std::string string("");
 	std::string stline("");
@@ -428,7 +432,7 @@ std::string MochaOpcodeProvider::loadText(std::string location)
 	return string;
 }
 
-std::string MochaOpcodeProvider::loadSpecials(std::string location)
+std::string MochaLexer::loadSpecials(std::string location)
 {
 	std::string string("");
 	std::string stline("");
@@ -453,7 +457,7 @@ std::string MochaOpcodeProvider::loadSpecials(std::string location)
 	return string;
 }
 
-std::string MochaOpcodeProvider::loadKeywords(std::string location)
+std::string MochaLexer::loadKeywords(std::string location)
 {
 	std::string string("");
 	std::string stline("");
@@ -474,7 +478,7 @@ std::string MochaOpcodeProvider::loadKeywords(std::string location)
 	return string;
 }
 
-std::string MochaOpcodeProvider::loadPrecedence(std::string location)
+std::string MochaLexer::loadPrecedence(std::string location)
 {
 	std::string string("");
 	std::string stline("");
@@ -505,7 +509,7 @@ std::string MochaOpcodeProvider::loadPrecedence(std::string location)
 	return string;
 }
 
-std::string MochaOpcodeProvider::loadncheck(std::string & s, std::ifstream & f)
+std::string MochaLexer::loadncheck(std::string & s, std::ifstream & f)
 {
 	f >> s;
 	return s;

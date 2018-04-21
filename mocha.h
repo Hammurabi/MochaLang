@@ -11,34 +11,33 @@
 #include <cstdlib>
 #include <map>
 
-namespace {
-	struct filevector
-	{
-		unsigned int line;
-		unsigned int offset;
-		/*
-		The number of spaces before this vector
-		*/
-		unsigned int numspaces;
-	};
+struct filevector
+{
+	unsigned int line;
+	unsigned int offset;
+	/*
+	The number of spaces before this vector
+	*/
+	unsigned int numspaces;
+};
 
-	struct token {
-		std::string name;
-		std::string value;
-		std::vector<token*> tokens;
-		int precedence;
+struct token {
+	std::string name;
+	std::string value;
+	std::vector<token*> tokens;
+	int precedence;
 
-		filevector  vector;
+	filevector  vector;
 
-		void print(std::string pre = "");
+	void print(std::string pre = "");
 
-		std::string spacing(int i);
+	std::string spacing(int i);
 
-		void debug(int spcing = 0);
+	void debug(int spcing = 0);
 
-		~token();
-	};
-}
+	token();
+	~token();
+};
 
 
 // char
@@ -317,230 +316,47 @@ public:
 
 #undef token_stack
 
-class MochaOpcodeProvider
+class MochaLexer
 {
 public:
 #define checkIndex(x, y) ((x >= y) ? 0 : x ++)
 #define checkIndex1(x, y) ((x >= y) ? 0 : x)
 #define checkIndex0(x) ((x <= 0) ? 0 : x - 1)
-	//struct TokenStream
-	//{
-	//	std::vector<token> tokens;
-	//	unsigned int index = 0;
 
-	//	TokenStream(std::vector<token> ts) : tokens(ts) {}
+	std::map<std::string, std::string>				specials;
+	std::vector<std::string>						keywords;
+	std::map<std::string, std::string>				types;
+	std::map<std::string, int>						precedence;
 
-	//	token& next()
-	//	{
-	//		if (tokens.size() <= index) return tokens[tokens.size() - 1];
-	//		else return tokens[index++];
-	//	}
+	bool hasNext(const std::string string, int index);
 
-	//	token& previewLast()
-	//	{
-	//		if ((index - 1) <= 0) return tokens[0];
-	//		else if ((index - 1) >= tokens.size()) return tokens[tokens.size() - 1];
-	//		return tokens[index - 1];
-	//	}
+	char getNext(const std::string string, int index);
 
-	//	token& previewNext()
-	//	{
-	//		if (tokens.size() <= index) return tokens[tokens.size() - 1];
-	//		else return tokens[index];
-	//	}
+	bool isSpecial(const std::string str, std::vector<token*>& tokens, const int line, const int offset, const int spaces);
 
-	//	bool hasPrevious()
-	//	{
-	//		return index > 0;
-	//	}
+	bool isKeyword(const std::string str, std::vector<token*>& tokens);
 
-	//	bool hasNext()
-	//	{
-	//		return index < tokens.size();
-	//	}
+	std::string typeof(std::string& str);
 
-	//	unsigned int remaining()
-	//	{
-	//		return tokens.size() - index;
-	//	}
-	//};
-	
-	//struct GRAMMAR_RULE
-	//{
-	//	std::string name;
-	//	std::vector<std::string> rules;
+	std::string chartypeof(std::string& c);
 
-	//	GRAMMAR_RULE(std::string n, std::vector<std::string> r) : name(n), rules(r) {}
+	int getprecedence(std::string& c);
 
-	//	//void parse(TokenStream& stream, std::vector<token>& tokens)
-	//	//{
-	//	//	using namespace std;
-	//	//	int i = stream.index;
+	void loop(std::vector<token*>& tokens, std::string& program, std::string& builder, int& i, int& offset, int& spaces, int& line, bool& countspaces, bool& isIdentifier);
 
-	//	//	int amt_spaces = 0;
-	//	//	token* lookoutfor = 0;
+	std::vector<token*> lex(std::string program, std::map<std::string, std::string> lexmap);
 
-	//	//	//int last____space = stream.previewLast().vector.numspaces;
-	//	//	//int current_space = stream.next().vector.numspaces; 
-	//	//	
+	void compile(std::string program);
 
+	std::string loadText(std::string location);
 
-	//	//	//if (rules[0] == "[WHITESPACE(>)]" && (current_space > last____space))
-	//	//	//{
-	//	//	//	tokens.push_back(token(stream.previewLast()));
+	std::string loadSpecials(std::string location);
 
-	//	//	//	while (stream.next().vector.numspaces > last____space)
-	//	//	//	{
-	//	//	//		tokens.push_back(token(stream.previewLast()));
-	//	//	//	}
-	//	//	//}
-	//	//	//else stream.index = i;
-	//	//}
+	std::string loadKeywords(std::string location);
 
-	//	//bool checkMatch(token& t, TokenStream& stream)
-	//	//{
-	//	//	using namespace std;
-	//	//	int i = stream.index;
+	std::string loadPrecedence(std::string location);
 
-	//	//	int amt_spaces = 0;
-	//	//	token* lookoutfor = 0;
-
-	//	//	if (rules.size() > stream.remaining()) return false;
-
-	//	//	//check if rule is special
-	//	//	if ((rules[0] == "[WHITESPACE(>)]" && stream.hasPrevious()))
-	//	//	{
-	//	//		if (t.vector.numspaces > stream.previewLast().vector.numspaces)
-	//	//		{
-	//	//			t.print();
-	//	//			stream.previewLast().print();
-	//	//			return true;
-	//	//		}
-	//	//	} //otherwise check rulename matches token name
-	//	//	
-	//	//	if (rules[0] == t.name)
-	//	//	{
-	//	//	}
-
-	//	//	stream.index = i;
-
-	//	//	//for (int i = 0; i < rules.size(); i++)
-	//	//	//{
-	//	//	//	token t = stream.next();
-	//	//	//	token last = stream.previewLast();
-
-	//	//	//	//SPECIAL TOKEN ACCESS
-	//	//	//	if (rules[i].at(0) == '*')
-	//	//	//	{
-	//	//	//		lookoutfor = &stream.previewNext();
-	//	//	//	} else if (rules[i].at(0) == '[')
-	//	//	//	{
-	//	//	//		if (rules[i] == "[WHITESPACE(>)]")
-	//	//	//		{
-	//	//	//			if (!(t.vector.numspaces > last.vector.numspaces)) return false;
-	//	//	//		}else if (rules[i] == "[WHITESPACE(<)]")
-	//	//	//		{
-	//	//	//			if (!(t.vector.numspaces < last.vector.numspaces)) return false;
-	//	//	//		} else if (rules[i] == "[WHITESPACE(>=)]")
-	//	//	//		{
-	//	//	//			if (!(t.vector.numspaces >= last.vector.numspaces)) return false;
-	//	//	//		}
-	//	//	//		else if (rules[i] == "[WHITESPACE(<=)]")
-	//	//	//		{
-	//	//	//			if (!(t.vector.numspaces <= last.vector.numspaces)) return false;
-	//	//	//		}
-	//	//	//		else if (rules[i] == "[endl]")
-	//	//	//		{
-	//	//	//			//This part will never be used hopefully.
-	//	//	//		}
-	//	//	//	}
-	//	//	//	else if (t.name != rules[i])
-	//	//	//	{
-	//	//	//		if (lookoutfor)
-	//	//	//		{
-
-	//	//	//		}
-	//	//	//		else
-	//	//	//		{
-	//	//	//			stream.index = i;
-	//	//	//			return false;
-	//	//	//		}
-	//	//	//	}
-	//	//	//}
-
-	//	//	return false;
-	//	//}
-	//};
-
-	//static std::vector<GRAMMAR_RULE> grammar;
-	//std::vector<void(*)()>				  grammar_;
-
-	static std::map<std::string, std::string>				specials;
-	static std::vector<std::string>							keywords;
-	static std::map<std::string, std::string>				types;
-	static std::map<std::string, int>						precedence;
-
-	//std::string keywords[] = {"for", "while", "class", "struct", "goto", "mark", "" };
-
-	static bool hasNext(const std::string string, int index);
-
-	static char getNext(const std::string string, int index);
-
-	static bool isSpecial(const std::string str, std::vector<token*>& tokens, const int line, const int offset, const int spaces);
-
-	static bool isKeyword(const std::string str, std::vector<token*>& tokens);
-
-	static std::string typeof(std::string& str);
-
-	static std::string chartypeof(std::string& c);
-
-	static int getprecedence(std::string& c);
-
-	static void loop(std::vector<token*>& tokens, std::string& program, std::string& builder, int& i, int& offset, int& spaces, int& line, bool& countspaces, bool& isIdentifier);
-
-	static std::vector<token*> lex(std::string program, std::map<std::string, std::string> lexmap);
-
-	static void compile(std::string program);
-
-	static std::string loadText(std::string location);
-
-	static std::string loadSpecials(std::string location);
-
-	static std::string loadKeywords(std::string location);
-
-	static std::string loadPrecedence(std::string location);
-
-	static std::string loadncheck(std::string& s, std::ifstream& f);
-
-	//static void loadGrammarFile(std::string location)
-	//{
-	//	using namespace std;
-	//	ifstream file;
-
-	//	file.open(location.c_str());
-	//	if (!file.is_open())
-	//		return;
-
-	//	string arg;
-	//	string name;
-	//	string version;
-
-	//	file >> version;
-
-	//	while (file.good())
-	//	{
-	//		vector<string> grammar_rule;
-	//		file >> name;
-
-	//		while (loadncheck(arg, file) != "[stop]")
-	//		{
-	//			grammar_rule.push_back(arg);
-	//		}
-
-	//		//GRAMMAR_RULE rule(name, grammar_rule);
-	//		//grammar.push_back(rule);
-	//	}
-	//}
-}
+	std::string loadncheck(std::string& s, std::ifstream& f);
+};
 
 #endif !MOCHA_H

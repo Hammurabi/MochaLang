@@ -15,9 +15,12 @@
 int main()
 {
 	std::map<std::string, std::string> map;
-	MochaOpcodeProvider::loadSpecials(".\\lang\\mochalang_specials.lex");
-	MochaOpcodeProvider::loadKeywords(".\\lang\\mochalang_keywords.lex");
-	MochaOpcodeProvider::loadPrecedence(".\\lang\\mochalang_tokens.lex");
+
+	MochaLexer lexer;
+	
+	lexer.loadSpecials(".\\lang\\mochalang_specials.lex");
+	lexer.loadKeywords(".\\lang\\mochalang_keywords.lex");
+	lexer.loadPrecedence(".\\lang\\mochalang_tokens.lex");
 	//MochaOpcodeProvider::loadGrammarFile(".\\lang\\Mochalang.gr");
 	//std::cout << MochaOpcodeProvider::loadText(".\\lang\\sample.ma");
 
@@ -31,7 +34,7 @@ int main()
 	//	}
 	//}
 
-	std::vector<token*> tokens = MochaOpcodeProvider::lex(MochaOpcodeProvider::loadText(".\\lang\\sample.ma"), map);
+	std::vector<token*> tokens = lexer.lex(lexer.loadText(".\\lang\\sample.ma"), map);
 
 	Parser parser;
 	std::vector<token*> parsed = parser.parse(tokens);

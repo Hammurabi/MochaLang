@@ -15,9 +15,8 @@ class Console
 class System
     private:
     public:
-        Clock clock = new Clock()
-        Console console = new Console()
-
+        static final Clock clock = new Clock()
+        static final Console console = new Console()
 class array<T>
     public:
         protected ulong length //can only be read from outside of class but never changed.
@@ -49,6 +48,16 @@ class stack<T>
         uint     _index = 0
         uint     _size  = 1
 
+        @size(PreModify) //this creates a hook to size, whenever stack.size = val is used, resize will be called.
+            void resize(uint size)
+                _stack.resize(size)
+                // stack st = new stack
+                // st.size = 10
+                //---------preprocess---------
+                // stack st = new stack()
+                // st.resize(10)
+                // st._size = 10
+
         void push_element(T t)
             _stack.resize(++_size)
             _stack[_index++] = t
@@ -58,6 +67,7 @@ class stack<T>
                 _stack.resize(size - 10)
             return _stack[--_index]
     public:
+        reference _size size //publically access _size as size without extra memory usage (can only be viewed from outside of class)
         constructor()
         destructor()
             delete _stack
@@ -67,3 +77,18 @@ class stack<T>
             pop_element()
         T    top()
             return _stack[_index - 1]
+
+class Thread
+    public:
+        protected final string name
+        void execute()
+        void wait()
+        void sleep()
+        void stop()
+class ThreadPool
+    public:
+        final uint size
+class Threading
+    public:
+        void execute(Runnable r)
+        ThreadPool fixedPool(uint size)
